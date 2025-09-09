@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Type, File, Copy, RotateCcw, AlertTriangle, Check } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { ToolProps } from '../../types';
@@ -190,7 +191,8 @@ SHA-256: ${hashResults.sha256}`;
             size="sm"
             className="flex-1"
           >
-            📝 テキスト入力
+            <Type className="w-4 h-4 mr-1" />
+            テキスト入力
           </Button>
           <Button
             variant={isFile ? 'primary' : 'outline'}
@@ -198,7 +200,8 @@ SHA-256: ${hashResults.sha256}`;
             size="sm"
             className="flex-1"
           >
-            📁 ファイル選択
+            <File className="w-4 h-4 mr-1" />
+            ファイル選択
           </Button>
         </div>
       </div>
@@ -265,7 +268,8 @@ SHA-256: ${hashResults.sha256}`;
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">ハッシュ結果</h3>
             <Button onClick={handleCopyAll} size="sm" variant="outline">
-              📋 すべてコピー
+              <Copy className="w-4 h-4 mr-1" />
+              すべてコピー
             </Button>
           </div>
 
@@ -279,14 +283,14 @@ SHA-256: ${hashResults.sha256}`;
                 </span>
               </h4>
               <Button size="sm" variant="outline" onClick={() => handleCopyHash('md5')}>
-                {isCopied ? '✓' : '📋'}
+                {isCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               </Button>
             </div>
             <code className="block bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded p-2 text-sm font-mono break-all text-gray-900 dark:text-white">
               {hashResults.md5}
             </code>
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              ⚠️ MD5は暗号学的に安全ではありません。セキュリティ用途には使用しないでください。
+              <AlertTriangle className="w-3 h-3 inline mr-1" /> MD5は暗号学的に安全ではありません。セキュリティ用途には使用しないでください。
             </p>
           </div>
 
@@ -300,14 +304,14 @@ SHA-256: ${hashResults.sha256}`;
                 </span>
               </h4>
               <Button size="sm" variant="outline" onClick={() => handleCopyHash('sha1')}>
-                {isCopied ? '✓' : '📋'}
+                {isCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               </Button>
             </div>
             <code className="block bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded p-2 text-sm font-mono break-all text-gray-900 dark:text-white">
               {hashResults.sha1}
             </code>
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              ⚠️ SHA-1は脆弱性が発見されています。新しいシステムではSHA-256以上を使用してください。
+              <AlertTriangle className="w-3 h-3 inline mr-1" /> SHA-1は脆弱性が発見されています。新しいシステムではSHA-256以上を使用してください。
             </p>
           </div>
 
@@ -321,14 +325,14 @@ SHA-256: ${hashResults.sha256}`;
                 </span>
               </h4>
               <Button size="sm" variant="outline" onClick={() => handleCopyHash('sha256')}>
-                {isCopied ? '✓' : '📋'}
+                {isCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               </Button>
             </div>
             <code className="block bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded p-2 text-sm font-mono break-all text-gray-900 dark:text-white">
               {hashResults.sha256}
             </code>
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              ✅ SHA-256は現在も安全とされており、セキュリティ用途に適しています。
+              <Check className="w-3 h-3 inline mr-1" /> SHA-256は現在も安全とされており、セキュリティ用途に適しています。
             </p>
           </div>
         </div>
@@ -341,7 +345,8 @@ SHA-256: ${hashResults.sha256}`;
           onClick={handleReset}
           disabled={!hasResults && !inputText && !fileName}
         >
-          🔄 リセット
+          <RotateCcw className="w-4 h-4 mr-1" />
+          リセット
         </Button>
       </div>
 

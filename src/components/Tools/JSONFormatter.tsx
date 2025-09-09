@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { AlertTriangle, Check, Copy, RotateCcw } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { ToolProps } from '../../types';
@@ -174,7 +175,7 @@ export function JSONFormatter({ onHistoryAdd }: ToolProps) {
         {error && (
           <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
             <div className="flex items-start">
-              <span className="text-red-500 mr-2">⚠️</span>
+              <AlertTriangle className="w-4 h-4 text-red-500 mr-2" />
               <div className="text-sm">
                 <div className="font-medium text-red-800 dark:text-red-200 mb-1">JSONエラー</div>
                 <div className="text-red-600 dark:text-red-300 font-mono">{error}</div>
@@ -187,7 +188,7 @@ export function JSONFormatter({ onHistoryAdd }: ToolProps) {
         {isValid && !error && inputJSON && (
           <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
             <div className="flex items-center text-sm text-green-800 dark:text-green-200">
-              <span className="mr-2">✓</span>
+              <Check className="w-4 h-4 mr-2" />
               有効なJSONです
             </div>
           </div>
@@ -214,14 +215,19 @@ export function JSONFormatter({ onHistoryAdd }: ToolProps) {
           disabled={!outputJSON}
           className="flex items-center gap-2"
         >
-          {isCopied ? '✓ コピー済み' : '📋 結果をコピー'}
+          {isCopied ? (
+            <><Check className="w-4 h-4 mr-1" /> コピー済み</>
+          ) : (
+            <><Copy className="w-4 h-4 mr-1" /> 結果をコピー</>
+          )}
         </Button>
         <Button 
           variant="outline" 
           onClick={handleReset}
           disabled={!inputJSON}
         >
-          🔄 リセット
+          <RotateCcw className="w-4 h-4 mr-1" />
+          リセット
         </Button>
       </div>
 

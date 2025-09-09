@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Copy, RotateCcw, Check } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { ToolProps } from '../../types';
@@ -141,14 +142,19 @@ export function CharacterCount({ onHistoryAdd }: ToolProps) {
           disabled={!text}
           className="flex items-center gap-2"
         >
-          {isCopied ? '✓ コピー済み' : '📋 結果をコピー'}
+          {isCopied ? (
+            <><Check className="w-4 h-4 mr-1" /> コピー済み</>
+          ) : (
+            <><Copy className="w-4 h-4 mr-1" /> 結果をコピー</>
+          )}
         </Button>
         <Button 
           variant="outline" 
           onClick={handleReset}
           disabled={!text}
         >
-          🔄 リセット
+          <RotateCcw className="w-4 h-4 mr-1" />
+          リセット
         </Button>
       </div>
     </div>

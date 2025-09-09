@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { AlertTriangle, RotateCcw, Trash2 } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { ToolProps } from '../../types';
@@ -256,7 +257,7 @@ export function BaseConverter({ onHistoryAdd }: ToolProps) {
       {error && (
         <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
           <div className="flex items-start">
-            <span className="text-red-500 mr-2">⚠️</span>
+            <AlertTriangle className="w-4 h-4 text-red-500 mr-2" />
             <div className="text-sm">
               <div className="font-medium text-red-800 dark:text-red-200 mb-1">変換エラー</div>
               <div className="text-red-600 dark:text-red-300">{error}</div>
@@ -298,14 +299,16 @@ export function BaseConverter({ onHistoryAdd }: ToolProps) {
           disabled={!outputText}
           className="flex items-center gap-2"
         >
-          🔄 入出力を入れ替え
+          <RotateCcw className="w-4 h-4 mr-1" />
+          入出力を入れ替え
         </Button>
         <Button 
           variant="outline" 
           onClick={handleReset}
           disabled={!inputText}
         >
-          🗑️ リセット
+          <Trash2 className="w-4 h-4 mr-1" />
+          リセット
         </Button>
       </div>
 

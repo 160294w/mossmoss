@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { RotateCcw } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { ToolProps } from '../../types';
@@ -252,7 +253,8 @@ export function TextConverter({ onHistoryAdd }: ToolProps) {
           onClick={handleReset}
           disabled={!inputText}
         >
-          🔄 リセット
+          <RotateCcw className="w-4 h-4 mr-1" />
+          リセット
         </Button>
       </div>
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import QRCode from 'qrcode';
+import { Download, Copy, AlertTriangle, Check } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { ToolProps } from '../../types';
@@ -281,7 +282,7 @@ export function QRGenerator({ onHistoryAdd }: ToolProps) {
         {error && (
           <div className="flex items-center justify-center h-64">
             <div className="text-red-500 text-center">
-              <div className="text-2xl mb-2">⚠️</div>
+              <AlertTriangle className="w-8 h-8 mx-auto mb-2" />
               <div>{error}</div>
             </div>
           </div>
@@ -295,10 +296,15 @@ export function QRGenerator({ onHistoryAdd }: ToolProps) {
             
             <div className="mt-4 flex justify-center gap-3">
               <Button onClick={downloadQR} className="flex items-center gap-2">
-                💾 ダウンロード
+                <Download className="w-4 h-4" />
+                ダウンロード
               </Button>
               <Button variant="outline" onClick={copyQR} className="flex items-center gap-2">
-                {isCopied ? '✓ コピー済み' : '📋 コピー'}
+                {isCopied ? (
+                  <><Check className="w-4 h-4" /> コピー済み</>
+                ) : (
+                  <><Copy className="w-4 h-4" /> コピー</>
+                )}
               </Button>
             </div>
           </div>

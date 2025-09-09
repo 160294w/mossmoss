@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Copy, Check } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { HistoryItem } from '../../types';
@@ -118,7 +119,11 @@ export function UUIDGenerator({ onHistoryAdd }: UUIDGeneratorProps) {
                 variant="outline"
                 size="sm"
               >
-                {isCopied ? 'コピー済み!' : 'すべてコピー'}
+                {isCopied ? (
+                  <><Check className="w-4 h-4 mr-1" /> コピー済み!</>
+                ) : (
+                  <><Copy className="w-4 h-4 mr-1" /> すべてコピー</>
+                )}
               </Button>
             )}
           </div>
@@ -137,7 +142,11 @@ export function UUIDGenerator({ onHistoryAdd }: UUIDGeneratorProps) {
                   variant="outline"
                   size="sm"
                 >
-                  {isCopied ? '✓' : 'コピー'}
+                  {isCopied ? (
+                    <Check className="w-4 h-4" />
+                  ) : (
+                    <><Copy className="w-4 h-4 mr-1" /> コピー</>
+                  )}
                 </Button>
               </div>
             ))}

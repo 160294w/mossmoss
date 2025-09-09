@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { AlertTriangle, Copy, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { ToolProps } from '../../types';
@@ -215,7 +216,7 @@ export function JWTViewer({ onHistoryAdd }: ToolProps) {
       {error && (
         <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
           <div className="flex items-start">
-            <span className="text-red-500 mr-2">⚠️</span>
+            <AlertTriangle className="w-4 h-4 text-red-500 mr-2" />
             <div className="text-sm">
               <div className="font-medium text-red-800 dark:text-red-200 mb-1">JWTエラー</div>
               <div className="text-red-600 dark:text-red-300">{error}</div>
@@ -235,9 +236,9 @@ export function JWTViewer({ onHistoryAdd }: ToolProps) {
               'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
             }`}>
               <div className={`flex items-center text-sm font-medium ${expStatus.className}`}>
-                <span className="mr-2">
-                  {expStatus.status === 'expired' ? '❌' : expStatus.status === 'expiring' ? '⏰' : '✅'}
-                </span>
+                {expStatus.status === 'expired' ? <XCircle className="w-4 h-4 mr-2" /> : 
+                 expStatus.status === 'expiring' ? <Clock className="w-4 h-4 mr-2" /> : 
+                 <CheckCircle className="w-4 h-4 mr-2" />}
                 {expStatus.message}
               </div>
             </div>
@@ -248,7 +249,8 @@ export function JWTViewer({ onHistoryAdd }: ToolProps) {
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white">ヘッダー (Header)</h3>
               <Button size="sm" variant="outline" onClick={handleCopyHeader}>
-                📋 コピー
+                <Copy className="w-4 h-4 mr-1" />
+                コピー
               </Button>
             </div>
             <pre className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md p-3 text-sm font-mono overflow-x-auto text-gray-900 dark:text-white">
@@ -276,7 +278,8 @@ export function JWTViewer({ onHistoryAdd }: ToolProps) {
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white">ペイロード (Payload)</h3>
               <Button size="sm" variant="outline" onClick={handleCopyPayload}>
-                📋 コピー
+                <Copy className="w-4 h-4 mr-1" />
+                コピー
               </Button>
             </div>
             <pre className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md p-3 text-sm font-mono overflow-x-auto text-gray-900 dark:text-white">
@@ -321,7 +324,7 @@ export function JWTViewer({ onHistoryAdd }: ToolProps) {
               </code>
             </div>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              ⚠️ このツールはJWTの構造を表示するだけで、シグネチャの検証は行いません。
+              <AlertTriangle className="w-4 h-4 inline mr-1" /> このツールはJWTの構造を表示するだけで、シグネチャの検証は行いません。
               セキュリティが重要な場合は、適切な検証ライブラリを使用してください。
             </p>
           </div>

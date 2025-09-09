@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { Dices, RefreshCw } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { ToolProps } from '../../types';
@@ -237,7 +238,8 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
       {/* 生成ボタン */}
       <div>
         <Button onClick={handleGenerate} size="lg" className="w-full md:w-auto">
-          🎲 ランダム文字列を生成
+          <Dices className="w-4 h-4 mr-1" />
+          ランダム文字列を生成
         </Button>
       </div>
 
@@ -264,7 +266,8 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
               variant="outline" 
               onClick={handleGenerate}
             >
-              🔄 再生成
+              <RefreshCw className="w-4 h-4 mr-1" />
+              再生成
             </Button>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Copy, Check } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { HistoryItem } from '../../types';
@@ -161,7 +162,9 @@ export function RadixConverter({ onHistoryAdd }: RadixConverterProps) {
                     variant="outline"
                     size="sm"
                   >
-                    {isCopied ? '✓' : 'コピー'}
+                    {isCopied ? <Check className="w-4 h-4" /> : (
+                      <><Copy className="w-4 h-4 mr-1" /> コピー</>
+                    )}
                   </Button>
                 </div>
               );
