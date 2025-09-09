@@ -1,0 +1,193 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: config-echo-pod
+  labels:
+    app: config-echo
+spec:
+  containers:
+  - name: config-echo
+    image: alpine:3.18
+    command: ["/bin/sh"]
+    args: 
+    - "-c"
+    - |
+      echo "=== ConfigMap Values ==="
+      echo "App Name: $APP_NAME"
+      echo "App Version: $APP_VERSION" 
+      echo "Environment: $ENVIRONMENT"
+      echo "Debug Mode: $DEBUG"
+      echo "Database Host: $DATABASE_HOST"
+      echo "Database Port: $DATABASE_PORT"
+      echo "Database Name: $DATABASE_NAME"
+      echo ""
+      echo "=== Secret Values ==="
+      echo "Database Username: $DB_USERNAME"
+      echo "Database Password: [HIDDEN - Length: ${#DB_PASSWORD}]"
+      echo "API Key: [HIDDEN - Length: ${#API_KEY}]"
+      echo "JWT Secret: [HIDDEN - Length: ${#JWT_SECRET}]"
+      echo ""
+      echo "=== Mounted Files ==="
+      echo "--- Application Properties ---"
+      cat /config/application.properties
+      echo ""
+      echo "--- Nginx Config ---"
+      cat /config/nginx.conf
+      echo ""
+      echo "=== Continuous Echo (every 30 seconds) ==="
+      while true; do
+        echo "$(date): Config and Secret values are loaded and accessible"
+        sleep 30
+      done
+    env:
+    # ConfigMapからの環境変数
+    - name: APP_NAME
+      valueFrom:
+        configMapKeyRef:
+          name: app-config
+          key: app.name
+    - name: APP_VERSION
+      valueFrom:
+        configMapKeyRef:
+          name: app-config
+          key: app.version
+    - name: ENVIRONMENT
+      valueFrom:
+        configMapKeyRef:
+          name: app-config
+          key: environment
+    - name: DEBUG
+      valueFrom:
+        configMapKeyRef:
+          name: app-config
+          key: debug
+    - name: DATABASE_HOST
+      valueFrom:
+        configMapKeyRef:
+          name: app-config
+          key: database.host
+    - name: DATABASE_PORT
+      valueFrom:
+        configMapKeyRef:
+          name: app-config
+          key: database.port
+    - name: DATABASE_NAME
+      valueFrom:
+        configMapKeyRef:
+          name: app-config
+          key: database.name
+    
+    # Secretからの環境変数
+    - name: DB_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: app-secret
+          key: database.username
+    - name: DB_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: app-secret
+          key: database.password
+    - name: API_KEY
+      valueFrom:
+        secretKeyRef:
+          name: app-secret
+          key: api.key
+    - name: JWT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: app-secret
+          key: jwt.secret
+    
+    volumeMounts:
+    # ConfigMapをファイルとしてマウント
+    - name: config-volume
+      mountPath: /config
+      readOnly: true
+    
+    resources:
+      requests:
+        memory: "32Mi"
+        cpu: "25m"
+      limits:
+        memory: "64Mi"
+        cpu: "50m"
+  
+  volumes:
+  - name: config-volume
+    configMap:
+      name: app-config
+      items:
+      - key: application.properties
+        path: application.properties
+      - key: nginx.conf
+        path: nginx.conf
+  
+  restartPolicy: Always
+
+---
+# 別のアプローチ: ConfigMapとSecretを全てマウントするPod
+apiVersion: v1
+kind: Pod
+metadata:
+  name: config-echo-pod-mounted
+  labels:
+    app: config-echo-mounted
+spec:
+  containers:
+  - name: config-echo-mounted
+    image: alpine:3.18
+    command: ["/bin/sh"]
+    args:
+    - "-c"
+    - |
+      echo "=== All ConfigMap Files ==="
+      ls -la /configmap/
+      echo ""
+      for file in /configmap/*; do
+        echo "--- $(basename $file) ---"
+        cat "$file"
+        echo ""
+      done
+      
+      echo "=== All Secret Files ==="
+      ls -la /secret/
+      echo ""
+      for file in /secret/*; do
+        echo "--- $(basename $file) ---"
+        echo "Content: $(cat $file | head -c 20)... [truncated for security]"
+        echo ""
+      done
+      
+      echo "=== Continuous monitoring ==="
+      while true; do
+        echo "$(date): ConfigMap and Secret files are accessible"
+        sleep 60
+      done
+    
+    volumeMounts:
+    - name: configmap-volume
+      mountPath: /configmap
+      readOnly: true
+    - name: secret-volume
+      mountPath: /secret
+      readOnly: true
+    
+    resources:
+      requests:
+        memory: "32Mi"
+        cpu: "25m"
+      limits:
+        memory: "64Mi"
+        cpu: "50m"
+  
+  volumes:
+  - name: configmap-volume
+    configMap:
+      name: app-config
+  - name: secret-volume
+    secret:
+      secretName: app-secret
+      defaultMode: 0400  # read-only for owner only
+  
+  restartPolicy: Always

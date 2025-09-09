@@ -7,7 +7,7 @@ import { ToolProps } from '../../types';
 
 type ErrorCorrectionLevel = 'L' | 'M' | 'Q' | 'H';
 
-export function QRGenerator({ onHistoryAdd }: ToolProps) {
+export function QRGenerator() {
   const [inputText, setInputText] = useState('');
   const [qrDataURL, setQRDataURL] = useState('');
   const [loading, setLoading] = useState(false);
@@ -54,11 +54,11 @@ export function QRGenerator({ onHistoryAdd }: ToolProps) {
       }
 
       if (onHistoryAdd) {
-        onHistoryAdd({
-          toolId: 'qr-generator',
-          input: text.slice(0, 50) + (text.length > 50 ? '...' : ''),
-          output: 'QRコード生成完了'
-        });
+//         onHistoryAdd({
+//           toolId: 'qr-generator',
+//           input: text.slice(0, 50) + (text.length > 50 ? '...' : ''),
+//           output: 'QRコード生成完了'
+//         });
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'QRコードの生成に失敗しました');

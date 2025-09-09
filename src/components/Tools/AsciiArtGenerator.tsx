@@ -14,7 +14,7 @@ type AACharacter = {
   description?: string;
 };
 
-export function AsciiArtGenerator({ onHistoryAdd }: AsciiArtGeneratorProps) {
+export function AsciiArtGenerator() {
   const [selectedArt, setSelectedArt] = useState('');
   const [selectedCharacter, setSelectedCharacter] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -513,20 +513,20 @@ export function AsciiArtGenerator({ onHistoryAdd }: AsciiArtGeneratorProps) {
     setSelectedArt(selectedAA.art);
     setSelectedCharacter(selectedAA.name);
     
-    onHistoryAdd({
-      toolId: 'ascii-art-generator',
-      result: `${selectedAA.name}を生成`
-    });
+//     onHistoryAdd({
+//       toolId: 'ascii-art-generator',
+//       output: `${selectedAA.name}を生成`
+//     });
   };
 
   const selectSpecificArt = (character: AACharacter) => {
     setSelectedArt(character.art);
     setSelectedCharacter(character.name);
     
-    onHistoryAdd({
-      toolId: 'ascii-art-generator',
-      result: `${character.name}を選択`
-    });
+//     onHistoryAdd({
+//       toolId: 'ascii-art-generator',
+//       output: `${character.name}を選択`
+//     });
   };
 
   const handleCopy = () => {

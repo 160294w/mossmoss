@@ -6,7 +6,7 @@ import { ToolProps } from '../../types';
 
 type ConversionType = 'numbers' | 'alphabet' | 'katakana' | 'all';
 
-export function TextConverter({ onHistoryAdd }: ToolProps) {
+export function TextConverter() {
   const [inputText, setInputText] = useState('');
   const [outputText, setOutputText] = useState('');
   const [conversionType, setConversionType] = useState<ConversionType>('all');
@@ -152,13 +152,13 @@ export function TextConverter({ onHistoryAdd }: ToolProps) {
     setOutputText(converted);
 
     if (onHistoryAdd) {
-      onHistoryAdd({
-        toolId: 'text-converter',
-        input: inputText,
-        output: converted
-      });
+//       onHistoryAdd({
+//         toolId: 'text-converter',
+//         input: inputText,
+//         output: converted
+//       });
     }
-  }, [inputText, conversionType, isFullWidth, onHistoryAdd]);
+  }, [inputText, conversionType, isFullWidth]);
 
   const handleCopy = async () => {
     await copyToClipboard(outputText);

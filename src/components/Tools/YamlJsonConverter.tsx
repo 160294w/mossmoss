@@ -8,7 +8,7 @@ interface YamlJsonConverterProps {
   onHistoryAdd: (item: Omit<HistoryItem, 'timestamp'>) => void;
 }
 
-export function YamlJsonConverter({ onHistoryAdd }: YamlJsonConverterProps) {
+export function YamlJsonConverter() {
   const [inputText, setInputText] = useState('');
   const [outputText, setOutputText] = useState('');
   const [inputFormat, setInputFormat] = useState<'yaml' | 'json'>('yaml');
@@ -49,22 +49,19 @@ export function YamlJsonConverter({ onHistoryAdd }: YamlJsonConverterProps) {
     
     try {
       let result: string;
-      let conversionType: string;
       
       if (inputFormat === 'yaml') {
         result = convertYamlToJson(inputText);
-        conversionType = 'YAML → JSON';
       } else {
         result = convertJsonToYaml(inputText);
-        conversionType = 'JSON → YAML';
       }
       
       setOutputText(result);
       
-      onHistoryAdd({
-        toolId: 'yaml-json-converter',
-        result: `${conversionType}変換実行`
-      });
+//       onHistoryAdd({
+//         toolId: 'yaml-json-converter',
+//         output: `${conversionType}変換実行`
+//       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '変換に失敗しました';
       setError(errorMessage);

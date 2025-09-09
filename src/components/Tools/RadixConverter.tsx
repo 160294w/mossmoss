@@ -8,7 +8,7 @@ interface RadixConverterProps {
   onHistoryAdd: (item: Omit<HistoryItem, 'timestamp'>) => void;
 }
 
-export function RadixConverter({ onHistoryAdd }: RadixConverterProps) {
+export function RadixConverter() {
   const [inputValue, setInputValue] = useState('');
   const [fromBase, setFromBase] = useState(10);
   const [results, setResults] = useState<{ [key: number]: string }>({});
@@ -61,10 +61,10 @@ export function RadixConverter({ onHistoryAdd }: RadixConverterProps) {
       setResults(newResults);
       setError('');
 
-      onHistoryAdd({
-        toolId: 'radix-converter',
-        result: `${fromBase}進数 "${inputValue}" を変換`
-      });
+//       onHistoryAdd({
+//         toolId: 'radix-converter',
+//         output: `${fromBase}進数 "${inputValue}" を変換`
+//       });
     } catch (err) {
       setError('変換中にエラーが発生しました');
     }

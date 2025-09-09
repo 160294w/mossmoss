@@ -7,7 +7,7 @@ import { ToolProps } from '../../types';
 type ConversionMode = 'encode' | 'decode';
 type ConversionType = 'base64' | 'base64url' | 'base58';
 
-export function BaseConverter({ onHistoryAdd }: ToolProps) {
+export function BaseConverter() {
   const [inputText, setInputText] = useState('');
   const [outputText, setOutputText] = useState('');
   const [mode, setMode] = useState<ConversionMode>('encode');
@@ -101,9 +101,9 @@ export function BaseConverter({ onHistoryAdd }: ToolProps) {
   };
 
   // 変換関数
-  const convertText = (text: string, type: ConversionType, mode: ConversionMode): { result: string; error: string } => {
+  const convertText = (text: string, type: ConversionType, mode: ConversionMode): { output: string; error: string } => {
     if (!text.trim()) {
-      return { result: '', error: '' };
+      return { output: '', error: '' };
     }
 
     try {
@@ -135,10 +135,10 @@ export function BaseConverter({ onHistoryAdd }: ToolProps) {
           break;
       }
 
-      return { result, error: '' };
+      return { output: result, error: '' };
     } catch (err) {
       return { 
-        result: '', 
+        output: '', 
         error: err instanceof Error ? err.message : `${type.toUpperCase()}の${mode === 'encode' ? 'エンコード' : 'デコード'}に失敗しました` 
       };
     }
@@ -146,18 +146,18 @@ export function BaseConverter({ onHistoryAdd }: ToolProps) {
 
   // リアルタイム変換
   useEffect(() => {
-    const { result, error } = convertText(inputText, conversionType, mode);
+    const { output: result, error } = convertText(inputText, conversionType, mode);
     setOutputText(result);
     setError(error);
 
-    if (result && !error && onHistoryAdd) {
-      onHistoryAdd({
-        toolId: 'base-converter',
-        input: inputText.slice(0, 50) + (inputText.length > 50 ? '...' : ''),
-        output: `${conversionType.toUpperCase()} ${mode === 'encode' ? 'エンコード' : 'デコード'}完了`
-      });
+    if (result && !error) {
+//       onHistoryAdd({
+//         toolId: 'base-converter',
+//         input: inputText.slice(0, 50) + (inputText.length > 50 ? '...' : ''),
+//         output: `${conversionType.toUpperCase()} ${mode === 'encode' ? 'エンコード' : 'デコード'}完了`
+//       });
     }
-  }, [inputText, conversionType, mode, onHistoryAdd]);
+  }, [inputText, conversionType, mode]);
 
   const handleCopy = async () => {
     await copyToClipboard(outputText);

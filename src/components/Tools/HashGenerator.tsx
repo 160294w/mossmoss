@@ -12,7 +12,7 @@ interface HashResult {
   sha256: string;
 }
 
-export function HashGenerator({ onHistoryAdd }: ToolProps) {
+export function HashGenerator() {
   const [inputText, setInputText] = useState('');
   const [hashResults, setHashResults] = useState<HashResult>({ md5: '', sha1: '', sha256: '' });
   const [isFile, setIsFile] = useState(false);
@@ -83,13 +83,13 @@ export function HashGenerator({ onHistoryAdd }: ToolProps) {
       setHashResults(results);
 
       if (onHistoryAdd) {
-        onHistoryAdd({
-          toolId: 'hash-generator',
-          input: typeof data === 'string' 
-            ? (data.length > 50 ? data.slice(0, 50) + '...' : data)
-            : fileName || `ファイル (${fileSize} bytes)`,
-          output: 'ハッシュ生成完了'
-        });
+//         onHistoryAdd({
+//           toolId: 'hash-generator',
+//           input: typeof data === 'string' 
+//             ? (data.length > 50 ? data.slice(0, 50) + '...' : data)
+//             : fileName || `ファイル (${fileSize} bytes)`,
+//           output: 'ハッシュ生成完了'
+//         });
       }
     } catch (error) {
       console.error('Hash generation error:', error);

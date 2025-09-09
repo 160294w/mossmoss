@@ -8,8 +8,7 @@ interface UUIDGeneratorProps {
   onHistoryAdd: (item: Omit<HistoryItem, 'timestamp'>) => void;
 }
 
-export function UUIDGenerator({ onHistoryAdd }: UUIDGeneratorProps) {
-  const [uuid, setUuid] = useState('');
+export function UUIDGenerator() {
   const [version, setVersion] = useState<'v4' | 'v1'>('v4');
   const [quantity, setQuantity] = useState(1);
   const [uuidList, setUuidList] = useState<string[]>([]);
@@ -31,16 +30,17 @@ export function UUIDGenerator({ onHistoryAdd }: UUIDGeneratorProps) {
     setUuidList(newUuids);
     
     if (newUuids.length === 1) {
-      setUuid(newUuids[0]);
-      onHistoryAdd({
-        toolId: 'uuid-generator',
-        result: newUuids[0]
-      });
+//       onHistoryAdd({
+//         toolId: 'uuid-generator',
+//         input: 'UUID生成',
+//         output: newUuids[0]
+//       });
     } else {
-      onHistoryAdd({
-        toolId: 'uuid-generator',
-        result: `${newUuids.length}個のUUID生成`
-      });
+//       onHistoryAdd({
+//         toolId: 'uuid-generator',
+//         input: `${newUuids.length}個のUUID生成`,
+//         output: `${newUuids.length}個のUUID生成`
+//       });
     }
   };
 

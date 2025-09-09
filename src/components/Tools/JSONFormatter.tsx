@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react';
 import { AlertTriangle, Check, Copy, RotateCcw } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
-import { ToolProps } from '../../types';
 
-export function JSONFormatter({ onHistoryAdd }: ToolProps) {
+export function JSONFormatter() {
   const [inputJSON, setInputJSON] = useState('');
   const [outputJSON, setOutputJSON] = useState('');
   const [error, setError] = useState('');
@@ -35,21 +34,22 @@ export function JSONFormatter({ onHistoryAdd }: ToolProps) {
     setOutputJSON(result.formatted);
     setError(result.error);
     setIsValid(result.valid);
-
-    if (result.valid && onHistoryAdd) {
-      onHistoryAdd({
-        toolId: 'json-formatter',
-        input: inputJSON.slice(0, 100) + (inputJSON.length > 100 ? '...' : ''),
-        output: 'JSON整形完了'
-      });
-    }
-  }, [inputJSON, indentSize, onHistoryAdd]);
+  }, [inputJSON, indentSize]);
 
   // ミニファイ（圧縮）
   const minifyJSON = () => {
-    const result = formatJSON(inputJSON, 0);
-    if (result.valid) {
-      setOutputJSON(JSON.stringify(JSON.parse(inputJSON)));
+    if (!isValid || !inputJSON.trim()) return;
+    
+    try {
+      const parsed = JSON.parse(inputJSON);
+      const minified = JSON.stringify(parsed);
+      setOutputJSON(minified);
+      
+      // インデント設定を0に変更して、リアルタイム更新を無効化
+      setIndentSize(0);
+    } catch (err) {
+      // エラーが発生した場合は何もしない
+      console.error('Minify error:', err);
     }
   };
 
@@ -68,7 +68,8 @@ export function JSONFormatter({ onHistoryAdd }: ToolProps) {
       "active": true,
       "score": null
     };
-    setInputJSON(JSON.stringify(sampleJSON));
+    // 整形済み（2スペースインデント）でJSONを挿入
+    setInputJSON(JSON.stringify(sampleJSON, null, 2));
   };
 
   const handleCopy = async () => {

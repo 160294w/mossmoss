@@ -14,7 +14,7 @@ interface GeneratorOptions {
   excludeAmbiguous: boolean;
 }
 
-export function RandomGenerator({ onHistoryAdd }: ToolProps) {
+export function RandomGenerator() {
   const [options, setOptions] = useState<GeneratorOptions>({
     length: 12,
     includeNumbers: true,
@@ -83,11 +83,11 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
     setGenerationHistory(prev => [newString, ...prev.slice(0, 4)]); // 最新5件まで
 
     if (onHistoryAdd && !newString.startsWith('エラー:')) {
-      onHistoryAdd({
-        toolId: 'random-generator',
-        input: `長さ:${options.length}, 文字種:${getCharTypeString()}`,
-        output: newString
-      });
+//       onHistoryAdd({
+//         toolId: 'random-generator',
+//         input: `長さ:${options.length}, 文字種:${getCharTypeString()}`,
+//         output: newString
+//       });
     }
   };
 

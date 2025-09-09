@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Copy, RotateCcw, Check } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
-import { ToolProps } from '../../types';
 
-export function CharacterCount({ onHistoryAdd }: ToolProps) {
+export function CharacterCount() {
   const [text, setText] = useState('');
   const [includeSpaces, setIncludeSpaces] = useState(true);
   const [includeNewlines, setIncludeNewlines] = useState(true);
@@ -35,16 +34,16 @@ export function CharacterCount({ onHistoryAdd }: ToolProps) {
                       includeSpaces && !includeNewlines ? counts.noNewlines :
                       counts.noSpacesNewlines;
 
-  // 履歴に追加
-  useEffect(() => {
-    if (text && onHistoryAdd) {
-      onHistoryAdd({
-        toolId: 'character-count',
-        input: text,
-        output: `${displayCount}文字`
-      });
-    }
-  }, [text, displayCount, onHistoryAdd]);
+  // 履歴追加機能は一時的に無効化（無限ループ防止）
+  // useEffect(() => {
+  //   if (text && onHistoryAdd) {
+//   //     onHistoryAdd({
+//   //       toolId: 'character-count',
+//   //       input: text,
+//   //       output: `${displayCount}文字`
+//   //     });
+  //   }
+  // }, [text, displayCount]);
 
   const handleCopy = async () => {
     const result = `テキスト: ${text}\n文字数: ${displayCount}文字\n単語数: ${counts.words}語\n行数: ${counts.lines}行`;

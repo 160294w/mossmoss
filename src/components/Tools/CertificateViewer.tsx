@@ -32,7 +32,7 @@ interface CertificateInfo {
   };
 }
 
-export function CertificateViewer({ onHistoryAdd }: CertificateViewerProps) {
+export function CertificateViewer() {
   const [inputCert, setInputCert] = useState('');
   const [certInfo, setCertInfo] = useState<CertificateInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -163,10 +163,10 @@ export function CertificateViewer({ onHistoryAdd }: CertificateViewerProps) {
       const info = parseCertificate(value);
       setCertInfo(info);
       
-      onHistoryAdd({
-        toolId: 'certificate-viewer',
-        result: '証明書情報を解析'
-      });
+//       onHistoryAdd({
+//         toolId: 'certificate-viewer',
+//         output: '証明書情報を解析'
+//       });
     } catch (err) {
       setError(err instanceof Error ? err.message : '証明書の解析エラー');
       setCertInfo(null);

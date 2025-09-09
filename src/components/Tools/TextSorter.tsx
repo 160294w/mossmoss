@@ -10,7 +10,7 @@ interface TextSorterProps {
 type SortMode = 'alphabetical' | 'numerical' | 'length' | 'random';
 type SortOrder = 'asc' | 'desc';
 
-export function TextSorter({ onHistoryAdd }: TextSorterProps) {
+export function TextSorter() {
   const [inputText, setInputText] = useState('');
   const [sortedText, setSortedText] = useState('');
   const [sortMode, setSortMode] = useState<SortMode>('alphabetical');
@@ -80,10 +80,10 @@ export function TextSorter({ onHistoryAdd }: TextSorterProps) {
     
     setSortedText(result);
 
-    onHistoryAdd({
-      toolId: 'text-sorter',
-      result: `${lines.length}行をソート（${getSortModeLabel()}）`
-    });
+//     onHistoryAdd({
+//       toolId: 'text-sorter',
+//       output: `${lines.length}行をソート（${getSortModeLabel()}）`
+//     });
   };
 
   const getSortModeLabel = () => {

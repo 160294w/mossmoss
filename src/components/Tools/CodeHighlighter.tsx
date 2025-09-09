@@ -24,7 +24,7 @@ const languageKeywords: Record<Exclude<SupportedLanguage, 'auto'>, string[]> = {
   css: ['{', '}', ':', ';', '.', '#', '@media', 'px', 'rem']
 };
 
-export function CodeHighlighter({ onHistoryAdd }: CodeHighlighterProps) {
+export function CodeHighlighter() {
   const [inputCode, setInputCode] = useState('');
   const [detectedLanguage, setDetectedLanguage] = useState<SupportedLanguage>('auto');
   const [manualLanguage, setManualLanguage] = useState<SupportedLanguage>('auto');
@@ -82,10 +82,10 @@ export function CodeHighlighter({ onHistoryAdd }: CodeHighlighterProps) {
     setDetectedLanguage(detected);
     
     if (code.trim()) {
-      onHistoryAdd({
-        toolId: 'code-highlighter',
-        result: `コードハイライト実行 (${detected})`
-      });
+//       onHistoryAdd({
+//         toolId: 'code-highlighter',
+//         output: `コードハイライト実行 (${detected})`
+//       });
     }
   };
 
@@ -139,7 +139,7 @@ int factorial(int n) {
 
 int main() {
     int num = 5;
-    printf("factorial(%d) = %d\\n", num, factorial(num));
+    printf("factorial(%d) = %d\n", num, factorial(num));
     return 0;
 }`,
 
@@ -151,11 +151,11 @@ BACKUP_DIR="/backup"
 
 echo "ログファイルのバックアップを開始します..."
 
-for file in $LOG_DIR/*.log; do
-    if [ -f "$file" ]; then
-        filename=$(basename "$file")
-        cp "$file" "$BACKUP_DIR/${filename}.$(date +%Y%m%d)"
-        echo "バックアップ完了: $filename"
+for file in \$LOG_DIR/*.log; do
+    if [ -f "\$file" ]; then
+        filename=\$(basename "\$file")
+        cp "\$file" "\$BACKUP_DIR/\${filename}.\$(date +%Y%m%d)"
+        echo "バックアップ完了: \$filename"
     fi
 done
 
@@ -182,14 +182,14 @@ func main() {
     
     http.HandleFunc("/", server.handleHome)
     
-    fmt.Printf("Server starting on port %s...\\n", server.port)
+    fmt.Printf("Server starting on port %s...\n", server.port)
     log.Fatal(http.ListenAndServe(":"+server.port, nil))
 }`,
 
       javascript: `// 非同期データフェッチとDOM操作
 async function fetchUserData(userId) {
     try {
-        const response = await fetch(\`/api/users/\${userId}\`);
+        const response = await fetch(\`/api/users/\$\{userId\}\`);
         const userData = await response.json();
         
         // DOM要素の更新
@@ -229,7 +229,7 @@ class UserService {
     }
     
     async getUsers<T extends User>(page: number = 1): Promise<UserResponse> {
-        const response = await fetch(\`\${this.baseUrl}/users?page=\${page}\`);
+        const response = await fetch(\`\$\{this.baseUrl\}/users?page=\$\{page\}\`);
         return response.json();
     }
 }
@@ -324,8 +324,12 @@ const userService = new UserService('/api');`,
 }`
     };
 
-    setInputCode(samples[lang]);
-    setDetectedLanguage(lang);
+    const sampleCode = samples[lang];
+    if (sampleCode) {
+      handleCodeChange(sampleCode);
+      // 手動で言語も設定
+      setManualLanguage(lang);
+    }
   };
 
   const supportedLanguages: { value: SupportedLanguage; label: string }[] = [
@@ -400,22 +404,42 @@ const userService = new UserService('/api');`,
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Button onClick={() => insertSample('python')} variant="outline" size="sm">
-            Python サンプル
-          </Button>
-          <Button onClick={() => insertSample('ruby')} variant="outline" size="sm">
-            Ruby サンプル
-          </Button>
-          <Button onClick={() => insertSample('c')} variant="outline" size="sm">
-            C サンプル
-          </Button>
-          <Button onClick={() => insertSample('shell')} variant="outline" size="sm">
-            Shell サンプル
-          </Button>
-          <Button onClick={() => insertSample('go')} variant="outline" size="sm">
-            Go サンプル
-          </Button>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            サンプルコード
+          </label>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+            <Button onClick={() => insertSample('python')} variant="outline" size="sm">
+              Python
+            </Button>
+            <Button onClick={() => insertSample('javascript')} variant="outline" size="sm">
+              JavaScript
+            </Button>
+            <Button onClick={() => insertSample('typescript')} variant="outline" size="sm">
+              TypeScript
+            </Button>
+            <Button onClick={() => insertSample('go')} variant="outline" size="sm">
+              Go
+            </Button>
+            <Button onClick={() => insertSample('ruby')} variant="outline" size="sm">
+              Ruby
+            </Button>
+            <Button onClick={() => insertSample('c')} variant="outline" size="sm">
+              C
+            </Button>
+            <Button onClick={() => insertSample('shell')} variant="outline" size="sm">
+              Shell
+            </Button>
+            <Button onClick={() => insertSample('html')} variant="outline" size="sm">
+              HTML
+            </Button>
+            <Button onClick={() => insertSample('css')} variant="outline" size="sm">
+              CSS
+            </Button>
+            <Button onClick={() => insertSample('json')} variant="outline" size="sm">
+              JSON
+            </Button>
+          </div>
         </div>
       </div>
 

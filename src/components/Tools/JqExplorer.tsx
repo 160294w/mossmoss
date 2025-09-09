@@ -17,7 +17,7 @@ interface JsonPathNode {
   isPrimitive: boolean;
 }
 
-export function JqExplorer({ onHistoryAdd }: JqExplorerProps) {
+export function JqExplorer() {
   const [inputJson, setInputJson] = useState('');
   const [parsedData, setParsedData] = useState<any>(null);
   const [selectedPath, setSelectedPath] = useState('');
@@ -219,10 +219,10 @@ export function JqExplorer({ onHistoryAdd }: JqExplorerProps) {
         const result = executeJqQuery(jqQuery, parsedData);
         setQueryResult(result);
         
-        onHistoryAdd({
-          toolId: 'jq-explorer',
-          result: `jqクエリ実行: ${jqQuery}`
-        });
+//         onHistoryAdd({
+//           toolId: 'jq-explorer',
+//           output: `jqクエリ実行: ${jqQuery}`
+//         });
       } catch (err) {
         setQueryResult(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
       }

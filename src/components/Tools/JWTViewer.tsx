@@ -16,7 +16,7 @@ interface DecodedJWT {
   error?: string;
 }
 
-export function JWTViewer({ onHistoryAdd }: ToolProps) {
+export function JWTViewer() {
   const [inputJWT, setInputJWT] = useState('');
   const [decodedJWT, setDecodedJWT] = useState<DecodedJWT | null>(null);
   const [error, setError] = useState('');
@@ -85,13 +85,13 @@ export function JWTViewer({ onHistoryAdd }: ToolProps) {
     setError(decoded.error || '');
 
     if (decoded.isValid && onHistoryAdd) {
-      onHistoryAdd({
-        toolId: 'jwt-viewer',
-        input: inputJWT.slice(0, 50) + (inputJWT.length > 50 ? '...' : ''),
-        output: 'JWT解析完了'
-      });
+//       onHistoryAdd({
+//         toolId: 'jwt-viewer',
+//         input: inputJWT.slice(0, 50) + (inputJWT.length > 50 ? '...' : ''),
+//         output: 'JWT解析完了'
+//       });
     }
-  }, [inputJWT, onHistoryAdd]);
+  }, [inputJWT]);
 
   // 日付のフォーマット
   const formatTimestamp = (timestamp: number): string => {

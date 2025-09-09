@@ -9,7 +9,7 @@ interface MarkdownConverterProps {
   onHistoryAdd: (item: Omit<HistoryItem, 'timestamp'>) => void;
 }
 
-export function MarkdownConverter({ onHistoryAdd }: MarkdownConverterProps) {
+export function MarkdownConverter() {
   const [mode, setMode] = useState<'md-to-html' | 'html-to-md'>('md-to-html');
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
@@ -66,19 +66,19 @@ export function MarkdownConverter({ onHistoryAdd }: MarkdownConverterProps) {
         const sanitizedHtml = DOMPurify.sanitize(rawHtml);
         setOutput(sanitizedHtml);
         
-        onHistoryAdd({
-          toolId: 'markdown-converter',
-          result: 'Markdown → HTML 変換'
-        });
+//         onHistoryAdd({
+//           toolId: 'markdown-converter',
+//           output: 'Markdown → HTML 変換'
+//         });
       } else {
         // HTML to Markdown
         const markdown = htmlToMarkdown(input);
         setOutput(markdown);
         
-        onHistoryAdd({
-          toolId: 'markdown-converter',
-          result: 'HTML → Markdown 変換'
-        });
+//         onHistoryAdd({
+//           toolId: 'markdown-converter',
+//           output: 'HTML → Markdown 変換'
+//         });
       }
       
       setError('');
