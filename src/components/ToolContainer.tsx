@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Button } from './UI/Button';
 import { Card } from './UI/Card';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface ToolContainerProps {
   title: string;
@@ -10,11 +11,13 @@ interface ToolContainerProps {
 }
 
 export function ToolContainer({ title, description, children, onBack }: ToolContainerProps) {
+  const { t } = useLanguage();
+  
   return (
     <div className="max-w-4xl mx-auto tool-container">
       <div className="mb-6">
         <Button variant="outline" onClick={onBack} className="mb-4">
-          ← 戻る
+          ← {t('common.back')}
         </Button>
         <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
           {title}
