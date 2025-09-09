@@ -20,6 +20,7 @@ import {
   Shield
 } from 'lucide-react';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { Header } from './components/Layout/Header';
 import { ToolCard } from './components/ToolCard';
 import { ToolContainer } from './components/ToolContainer';
@@ -44,132 +45,142 @@ import { JqExplorer } from './components/Tools/JqExplorer';
 import { CertificateViewer } from './components/Tools/CertificateViewer';
 import { useGSAP } from './hooks/useGSAP';
 
-// ツール定義（実装予定）
-const tools: Tool[] = [
+// ツール定義（基本情報）
+const toolsConfig = [
   {
     id: 'character-count',
-    name: '文字数カウント',
-    description: 'テキストの文字数をリアルタイムで表示',
+    nameKey: 'tool.characterCount.name',
+    descriptionKey: 'tool.characterCount.description',
     icon: FileText,
     component: CharacterCount
   },
   {
     id: 'text-converter',
-    name: '全角・半角変換',
-    description: '数字、英字、カタカナを個別に変換',
+    nameKey: 'tool.textConverter.name',
+    descriptionKey: 'tool.textConverter.description',
     icon: RefreshCw,
     component: TextConverter
   },
   {
     id: 'random-generator',
-    name: 'ランダム文字列生成',
-    description: '桁数や文字種を指定して生成',
+    nameKey: 'tool.randomGenerator.name',
+    descriptionKey: 'tool.randomGenerator.description',
     icon: Dices,
     component: RandomGenerator
   },
   {
     id: 'json-formatter',
-    name: 'JSONフォーマッタ',
-    description: 'JSONを整形して見やすく表示',
+    nameKey: 'tool.jsonFormatter.name',
+    descriptionKey: 'tool.jsonFormatter.description',
     icon: Code2,
     component: JSONFormatter
   },
   {
     id: 'qr-generator',
-    name: 'QRコード生成',
-    description: 'テキストからQRコードを生成',
+    nameKey: 'tool.qrGenerator.name',
+    descriptionKey: 'tool.qrGenerator.description',
     icon: QrCode,
     component: QRGenerator
   },
   {
     id: 'jwt-viewer',
-    name: 'JWT Viewer',
-    description: 'JWTトークンをデコードして表示',
+    nameKey: 'tool.jwtViewer.name',
+    descriptionKey: 'tool.jwtViewer.description',
     icon: Key,
     component: JWTViewer
   },
   {
     id: 'base-converter',
-    name: 'Base64/58変換',
-    description: 'Base64、Base64URL、Base58の変換',
+    nameKey: 'tool.baseConverter.name',
+    descriptionKey: 'tool.baseConverter.description',
     icon: Binary,
     component: BaseConverter
   },
   {
     id: 'hash-generator',
-    name: 'ハッシュ生成',
-    description: 'MD5、SHA-1、SHA-256ハッシュ生成',
+    nameKey: 'tool.hashGenerator.name',
+    descriptionKey: 'tool.hashGenerator.description',
     icon: Hash,
     component: HashGenerator
   },
   {
     id: 'uuid-generator',
-    name: 'UUID生成',
-    description: 'UUID v4/v1を生成',
+    nameKey: 'tool.uuidGenerator.name',
+    descriptionKey: 'tool.uuidGenerator.description',
     icon: Fingerprint,
     component: UUIDGenerator
   },
   {
     id: 'radix-converter',
-    name: '進数変換',
-    description: '2進数、8進数、16進数などの相互変換',
+    nameKey: 'tool.radixConverter.name',
+    descriptionKey: 'tool.radixConverter.description',
     icon: Calculator,
     component: RadixConverter
   },
   {
     id: 'markdown-converter',
-    name: 'Markdown変換',
-    description: 'Markdown ⇔ HTML 相互変換',
+    nameKey: 'tool.markdownConverter.name',
+    descriptionKey: 'tool.markdownConverter.description',
     icon: FileCode,
     component: MarkdownConverter
   },
   {
     id: 'text-sorter',
-    name: 'テキストソート',
-    description: '行単位でのソート・重複削除・シャッフル',
+    nameKey: 'tool.textSorter.name',
+    descriptionKey: 'tool.textSorter.description',
     icon: ArrowUpDown,
     component: TextSorter
   },
   {
     id: 'code-highlighter',
-    name: 'コードハイライト',
-    description: '自動言語検出とシンタックスハイライト',
+    nameKey: 'tool.codeHighlighter.name',
+    descriptionKey: 'tool.codeHighlighter.description',
     icon: Highlighter,
     component: CodeHighlighter
   },
   {
     id: 'ascii-art-generator',
-    name: 'アスキーアート',
-    description: '2ちゃんねる風AAをランダム生成',
+    nameKey: 'tool.asciiArtGenerator.name',
+    descriptionKey: 'tool.asciiArtGenerator.description',
     icon: Smile,
     component: AsciiArtGenerator
   },
   {
     id: 'yaml-json-converter',
-    name: 'YAML/JSON変換',
-    description: 'YAML ⇔ JSON 相互変換',
+    nameKey: 'tool.yamlJsonConverter.name',
+    descriptionKey: 'tool.yamlJsonConverter.description',
     icon: RotateCcw,
     component: YamlJsonConverter
   },
   {
     id: 'jq-explorer',
-    name: 'jqエクスプローラー',
-    description: 'JSON探索でjqクエリを自動生成',
+    nameKey: 'tool.jqExplorer.name',
+    descriptionKey: 'tool.jqExplorer.description',
     icon: Search,
     component: JqExplorer
   },
   {
     id: 'certificate-viewer',
-    name: '証明書ビューア (工事中)',
-    description: 'X.509証明書の詳細情報を表示',
+    nameKey: 'tool.certificateViewer.name',
+    descriptionKey: 'tool.certificateViewer.description',
     icon: Shield,
     component: CertificateViewer
   }
 ];
 
-function App() {
+function AppContent() {
   const [currentTool, setCurrentTool] = useState<string | null>(null);
   const [, setHistory] = useLocalStorage<HistoryItem[]>('toolHistory', []);
+  const { t } = useLanguage();
+  
+  // ツール定義を多言語対応で変換
+  const tools: Tool[] = toolsConfig.map(tool => ({
+    id: tool.id,
+    name: t(tool.nameKey),
+    description: t(tool.descriptionKey),
+    icon: tool.icon,
+    component: tool.component
+  }));
   
   // GSAPアニメーション
   const containerRef = useGSAP(() => {
@@ -248,44 +259,52 @@ function App() {
   const selectedTool = tools.find(tool => tool.id === currentTool);
 
   return (
-    <ThemeProvider>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-        <Header />
-        
-        <main ref={containerRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {currentTool && selectedTool ? (
-            <ToolContainer
-              title={selectedTool.name}
-              description={selectedTool.description}
-              onBack={handleBack}
-            >
-              <selectedTool.component onHistoryAdd={handleHistoryAdd} />
-            </ToolContainer>
-          ) : (
-            <div>
-              <div className="text-center mb-12">
-                <h2 className="main-title text-4xl font-bold text-gray-900 dark:text-white mb-4">
-                  便利ツール集
-                </h2>
-                <p className="main-title text-xl text-gray-600 dark:text-gray-400">
-                  よく使う小物ツールを一箇所に
-                </p>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-                {tools.map(tool => (
-                  <div key={tool.id} className="tool-card">
-                    <ToolCard
-                      tool={tool}
-                      onClick={() => handleToolSelect(tool.id)}
-                    />
-                  </div>
-                ))}
-              </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      <Header />
+      
+      <main ref={containerRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {currentTool && selectedTool ? (
+          <ToolContainer
+            title={selectedTool.name}
+            description={selectedTool.description}
+            onBack={handleBack}
+          >
+            <selectedTool.component onHistoryAdd={handleHistoryAdd} />
+          </ToolContainer>
+        ) : (
+          <div>
+            <div className="text-center mb-12">
+              <h2 className="main-title text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                {t('main.title')}
+              </h2>
+              <p className="main-title text-xl text-gray-600 dark:text-gray-400">
+                {t('main.subtitle')}
+              </p>
             </div>
-          )}
-        </main>
-      </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+              {tools.map(tool => (
+                <div key={tool.id} className="tool-card">
+                  <ToolCard
+                    tool={tool}
+                    onClick={() => handleToolSelect(tool.id)}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <LanguageProvider>
+        <AppContent />
+      </LanguageProvider>
     </ThemeProvider>
   );
 }
