@@ -12,7 +12,12 @@ import {
   Fingerprint, 
   Calculator, 
   FileCode, 
-  ArrowUpDown 
+  ArrowUpDown,
+  Highlighter,
+  Smile,
+  RotateCcw,
+  Search,
+  Shield
 } from 'lucide-react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { Header } from './components/Layout/Header';
@@ -32,6 +37,11 @@ import { UUIDGenerator } from './components/Tools/UUIDGenerator';
 import { RadixConverter } from './components/Tools/RadixConverter';
 import { MarkdownConverter } from './components/Tools/MarkdownConverter';
 import { TextSorter } from './components/Tools/TextSorter';
+import { CodeHighlighter } from './components/Tools/CodeHighlighter';
+import { AsciiArtGenerator } from './components/Tools/AsciiArtGenerator';
+import { YamlJsonConverter } from './components/Tools/YamlJsonConverter';
+import { JqExplorer } from './components/Tools/JqExplorer';
+import { CertificateViewer } from './components/Tools/CertificateViewer';
 import { useGSAP } from './hooks/useGSAP';
 
 // ツール定義（実装予定）
@@ -119,6 +129,41 @@ const tools: Tool[] = [
     description: '行単位でのソート・重複削除・シャッフル',
     icon: ArrowUpDown,
     component: TextSorter
+  },
+  {
+    id: 'code-highlighter',
+    name: 'コードハイライト',
+    description: '自動言語検出とシンタックスハイライト',
+    icon: Highlighter,
+    component: CodeHighlighter
+  },
+  {
+    id: 'ascii-art-generator',
+    name: 'アスキーアート',
+    description: '2ちゃんねる風AAをランダム生成',
+    icon: Smile,
+    component: AsciiArtGenerator
+  },
+  {
+    id: 'yaml-json-converter',
+    name: 'YAML/JSON変換',
+    description: 'YAML ⇔ JSON 相互変換',
+    icon: RotateCcw,
+    component: YamlJsonConverter
+  },
+  {
+    id: 'jq-explorer',
+    name: 'jqエクスプローラー',
+    description: 'JSON探索でjqクエリを自動生成',
+    icon: Search,
+    component: JqExplorer
+  },
+  {
+    id: 'certificate-viewer',
+    name: '証明書ビューア (工事中)',
+    description: 'X.509証明書の詳細情報を表示',
+    icon: Shield,
+    component: CertificateViewer
   }
 ];
 
