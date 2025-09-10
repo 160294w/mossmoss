@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { FileText, Search, Filter, Download, Copy, RotateCcw, Check, Eye, EyeOff, Calendar, AlertCircle, Info, CheckCircle, XCircle, Zap } from 'lucide-react';
+import { FileText, Search, Download, Copy, RotateCcw, Check, Eye, EyeOff, Calendar, AlertCircle, Info, CheckCircle, XCircle, Zap } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -140,11 +140,10 @@ export function JsonLogViewer({ onHistoryAdd }: ToolProps) {
       if (logs.length > 0) {
         onHistoryAdd?.({
           toolId: 'json-log-viewer',
-          input: t('jsonLogViewer.historyInput', { count: logs.length }),
-          output: t('jsonLogViewer.historyOutput', { 
-            errors: logs.filter(l => l.level === 'error').length, 
-            warnings: logs.filter(l => l.level === 'warn').length 
-          })
+          input: t('jsonLogViewer.historyInput').replace('{count}', logs.length.toString()),
+          output: t('jsonLogViewer.historyOutput')
+            .replace('{errors}', logs.filter(l => l.level === 'error').length.toString())
+            .replace('{warnings}', logs.filter(l => l.level === 'warn').length.toString())
         });
       }
     } catch (err) {
@@ -382,7 +381,7 @@ export function JsonLogViewer({ onHistoryAdd }: ToolProps) {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {t('jsonLogViewer.results.title', { count: filteredLogs.length })}
+              {t('jsonLogViewer.results.title').replace('{count}', filteredLogs.length.toString())}
             </h3>
             <div className="flex gap-2">
               <Button

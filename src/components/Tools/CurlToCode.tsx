@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Terminal, Code2, Copy, RotateCcw, Check } from 'lucide-react';
+import { Terminal, Copy, RotateCcw, Check } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -484,7 +484,7 @@ export function CurlToCode({ onHistoryAdd }: ToolProps) {
             <Button
               key={lang.value}
               size="sm"
-              variant={selectedLanguage === lang.value ? 'default' : 'outline'}
+              variant={selectedLanguage === lang.value ? 'primary' : 'outline'}
               onClick={() => setSelectedLanguage(lang.value)}
               className="justify-start"
             >

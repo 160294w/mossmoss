@@ -513,8 +513,8 @@ export function AsciiArtGenerator({ onHistoryAdd }: ToolProps) {
     
     onHistoryAdd?.({
       toolId: 'ascii-art-generator',
-      input: t('asciiArtGenerator.historyInput', { category: selectedCategory }),
-      output: t('asciiArtGenerator.historyOutput.random', { name: selectedAA.name })
+      input: t('asciiArtGenerator.historyInput').replace('{category}', selectedCategory),
+      output: t('asciiArtGenerator.historyOutput.random').replace('{name}', selectedAA.name)
     });
   };
 
@@ -524,8 +524,8 @@ export function AsciiArtGenerator({ onHistoryAdd }: ToolProps) {
     
     onHistoryAdd?.({
       toolId: 'ascii-art-generator',
-      input: t('asciiArtGenerator.historyInput', { category: character.category }),
-      output: t('asciiArtGenerator.historyOutput.select', { name: character.name })
+      input: t('asciiArtGenerator.historyInput').replace('{category}', character.category),
+      output: t('asciiArtGenerator.historyOutput.select').replace('{name}', character.name)
     });
   };
 
@@ -572,8 +572,8 @@ export function AsciiArtGenerator({ onHistoryAdd }: ToolProps) {
 
         <div className="text-sm text-gray-600 dark:text-gray-400">
           <p>
-            {t('asciiArtGenerator.availableCount', { count: filteredArts.length })}
-            {selectedCharacter && ` | ${t('asciiArtGenerator.currentDisplay', { character: selectedCharacter })}`}
+            {t('asciiArtGenerator.availableCount').replace('{count}', filteredArts.length.toString())}
+            {selectedCharacter && ` | ${t('asciiArtGenerator.currentDisplay').replace('{character}', selectedCharacter)}`}
           </p>
         </div>
       </div>
@@ -596,7 +596,7 @@ export function AsciiArtGenerator({ onHistoryAdd }: ToolProps) {
 
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          {t('asciiArtGenerator.list.title', { category: categories.find(c => c.value === selectedCategory)?.label })}
+          {t('asciiArtGenerator.list.title').replace('{category}', categories.find(c => c.value === selectedCategory)?.label || '')}
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

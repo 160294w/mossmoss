@@ -59,7 +59,7 @@ export function YamlJsonConverter({ onHistoryAdd }: ToolProps) {
       onHistoryAdd?.({
         toolId: 'yaml-json-converter',
         input: `${inputFormat.toUpperCase()} text`,
-        output: t('yamlJsonConverter.history.converted', { format: inputFormat === 'yaml' ? 'JSON' : 'YAML' })
+        output: t('yamlJsonConverter.history.converted').replace('{format}', inputFormat === 'yaml' ? 'JSON' : 'YAML')
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : t('yamlJsonConverter.error.conversionFailed');
@@ -205,12 +205,12 @@ export function YamlJsonConverter({ onHistoryAdd }: ToolProps) {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {t('yamlJsonConverter.label.input', { format: inputFormat === 'yaml' ? 'YAML' : 'JSON' })}
+            {t('yamlJsonConverter.label.input').replace('{format}', inputFormat === 'yaml' ? 'YAML' : 'JSON')}
           </label>
           <textarea
             value={inputText}
             onChange={(e) => handleInputChange(e.target.value)}
-            placeholder={t('yamlJsonConverter.placeholder.input', { format: inputFormat === 'yaml' ? 'YAML' : 'JSON' })}
+            placeholder={t('yamlJsonConverter.placeholder.input').replace('{format}', inputFormat === 'yaml' ? 'YAML' : 'JSON')}
             rows={12}
             className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono text-sm resize-y"
           />
@@ -226,7 +226,7 @@ export function YamlJsonConverter({ onHistoryAdd }: ToolProps) {
 
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {t('yamlJsonConverter.label.output', { format: inputFormat === 'yaml' ? 'JSON' : 'YAML' })}
+            {t('yamlJsonConverter.label.output').replace('{format}', inputFormat === 'yaml' ? 'JSON' : 'YAML')}
           </h3>
           <div className="flex space-x-2">
             <Button onClick={handleConvert} variant="outline" size="sm">
@@ -246,7 +246,7 @@ export function YamlJsonConverter({ onHistoryAdd }: ToolProps) {
         <textarea
           value={outputText}
           readOnly
-          placeholder={t('yamlJsonConverter.placeholder.output', { format: inputFormat === 'yaml' ? 'JSON' : 'YAML' })}
+          placeholder={t('yamlJsonConverter.placeholder.output').replace('{format}', inputFormat === 'yaml' ? 'JSON' : 'YAML')}
           rows={12}
           className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm resize-y"
         />

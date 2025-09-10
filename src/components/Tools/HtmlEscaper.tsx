@@ -114,11 +114,11 @@ export function HtmlEscaper({ onHistoryAdd }: ToolProps) {
     let result = text;
     
     // 数値文字参照（&#123; や &#x7B; 形式）
-    result = result.replace(/&#(\d+);/g, (match, dec) => {
+    result = result.replace(/&#(\d+);/g, (_, dec) => {
       return String.fromCharCode(parseInt(dec, 10));
     });
     
-    result = result.replace(/&#x([0-9a-f]+);/gi, (match, hex) => {
+    result = result.replace(/&#x([0-9a-f]+);/gi, (_, hex) => {
       return String.fromCharCode(parseInt(hex, 16));
     });
     
@@ -214,7 +214,7 @@ export function HtmlEscaper({ onHistoryAdd }: ToolProps) {
         <div className="flex gap-2">
           <Button
             size="sm"
-            variant={mode === 'escape' ? 'default' : 'outline'}
+            variant={mode === 'escape' ? 'primary' : 'outline'}
             onClick={() => setMode('escape')}
           >
             <Code className="w-4 h-4 mr-1" />
@@ -223,7 +223,7 @@ export function HtmlEscaper({ onHistoryAdd }: ToolProps) {
           <ArrowLeftRight className="w-4 h-4 text-gray-400 self-center" />
           <Button
             size="sm"
-            variant={mode === 'unescape' ? 'default' : 'outline'}
+            variant={mode === 'unescape' ? 'primary' : 'outline'}
             onClick={() => setMode('unescape')}
           >
             <FileText className="w-4 h-4 mr-1" />

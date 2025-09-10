@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Clock, Calendar, Copy, RotateCcw, Check, Info } from 'lucide-react';
+import { Calendar, Copy, RotateCcw, Check, Info } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -376,7 +376,7 @@ export function CronParser({ onHistoryAdd }: ToolProps) {
                     })}
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
-                    {index === 0 ? t('cronParser.nextRun') : t('cronParser.runCount', { count: index + 1 })}
+                    {index === 0 ? t('cronParser.nextRun') : t('cronParser.runCount').replace('{count}', (index + 1).toString())}
                   </div>
                 </div>
                 <Button

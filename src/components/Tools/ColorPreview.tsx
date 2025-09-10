@@ -131,7 +131,7 @@ export function ColorPreview({ onHistoryAdd }: ToolProps) {
         onHistoryAdd?.({
           toolId: 'color-preview',
           input: input,
-          output: t('colorPreview.historyOutput', { hex: normalizedHex, r: rgb.r, g: rgb.g, b: rgb.b })
+          output: t('colorPreview.historyOutput').replace('{hex}', normalizedHex).replace('{r}', rgb.r.toString()).replace('{g}', rgb.g.toString()).replace('{b}', rgb.b.toString())
         });
       }
     }

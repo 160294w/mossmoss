@@ -36,7 +36,7 @@ export function RadixConverter({ onHistoryAdd }: ToolProps) {
     }
 
     if (!validateInput(inputValue, fromBase)) {
-      setError(t('radixConverter.error.invalidChars', { base: fromBase.toString() }));
+      setError(t('radixConverter.error.invalidChars').replace('{base}', fromBase.toString()));
       return;
     }
 
@@ -61,7 +61,7 @@ export function RadixConverter({ onHistoryAdd }: ToolProps) {
 
       onHistoryAdd?.({
         toolId: 'radix-converter',
-        input: t('radixConverter.historyInput', { base: fromBase.toString(), value: inputValue }),
+        input: t('radixConverter.historyInput').replace('{base}', fromBase.toString()).replace('{value}', inputValue),
         output: t('radixConverter.historyOutput')
       });
     } catch (err) {

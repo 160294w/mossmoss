@@ -207,8 +207,8 @@ export function JqExplorer({ onHistoryAdd }: ToolProps) {
         
         onHistoryAdd?.({
           toolId: 'jq-explorer',
-          input: t('jqExplorer.historyInput', { path: path.join('.') }),
-          output: t('jqExplorer.historyOutput', { query: jqQuery })
+          input: t('jqExplorer.historyInput').replace('{path}', path.join('.')),
+          output: t('jqExplorer.historyOutput').replace('{query}', jqQuery)
         });
       } catch (err) {
         setQueryResult(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);

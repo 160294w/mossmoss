@@ -156,7 +156,7 @@ export function BaseConverter({ onHistoryAdd }: ToolProps) {
       onHistoryAdd({
         toolId: 'base-converter',
         input: inputText.slice(0, 50) + (inputText.length > 50 ? '...' : ''),
-        output: mode === 'encode' ? t('baseConverter.historyOutput.encode', { format: conversionType.toUpperCase() }) : t('baseConverter.historyOutput.decode', { format: conversionType.toUpperCase() })
+        output: mode === 'encode' ? t('baseConverter.historyOutput.encode').replace('{format}', conversionType.toUpperCase()) : t('baseConverter.historyOutput.decode').replace('{format}', conversionType.toUpperCase())
       });
     }
   }, [inputText, conversionType, mode]);
@@ -239,13 +239,13 @@ export function BaseConverter({ onHistoryAdd }: ToolProps) {
       {/* 入力エリア */}
       <div>
         <label htmlFor="input-text" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          {mode === 'encode' ? t('baseConverter.input.originalText') : t('baseConverter.input.encodedText', { format: conversionType.toUpperCase() })}
+          {mode === 'encode' ? t('baseConverter.input.originalText') : t('baseConverter.input.encodedText').replace('{format}', conversionType.toUpperCase())}
         </label>
         <textarea
           id="input-text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          placeholder={mode === 'encode' ? t('baseConverter.input.placeholderEncode') : t('baseConverter.input.placeholderDecode', { format: conversionType.toUpperCase() })}
+          placeholder={mode === 'encode' ? t('baseConverter.input.placeholderEncode') : t('baseConverter.input.placeholderDecode').replace('{format}', conversionType.toUpperCase())}
           className="w-full h-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-y font-mono text-sm"
         />
         {inputText && (
@@ -271,7 +271,7 @@ export function BaseConverter({ onHistoryAdd }: ToolProps) {
       {/* 出力エリア */}
       <div>
         <label htmlFor="output-text" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          {mode === 'encode' ? t('baseConverter.input.encodedText', { format: conversionType.toUpperCase() }) : t('baseConverter.input.decodedText')}
+          {mode === 'encode' ? t('baseConverter.input.encodedText').replace('{format}', conversionType.toUpperCase()) : t('baseConverter.input.decodedText')}
         </label>
         <textarea
           id="output-text"

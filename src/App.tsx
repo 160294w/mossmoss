@@ -22,7 +22,6 @@ import {
   Clock,
   Calendar,
   Terminal,
-  Globe,
   AlertTriangle,
   ScrollText,
   ArrowRightLeft,

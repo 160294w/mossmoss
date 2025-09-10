@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Type, Copy, RotateCcw, Check, ArrowRightLeft } from 'lucide-react';
+import { Type, Copy, RotateCcw, Check } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { useLanguage } from '../../contexts/LanguageContext';

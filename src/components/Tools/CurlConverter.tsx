@@ -149,7 +149,7 @@ export function CurlConverter({ onHistoryAdd }: ToolProps) {
         onHistoryAdd?.({
           toolId: 'curl-converter',
           input: curlInput.slice(0, 100) + (curlInput.length > 100 ? '...' : ''),
-          output: t('curlConverter.historyOutput.curlToHttp', { method: request.method, url: request.url })
+          output: t('curlConverter.historyOutput.curlToHttp').replace('{method}', request.method).replace('{url}', request.url)
         });
 
       } else {
@@ -215,7 +215,7 @@ Authorization: Bearer token123`);
         <div className="flex gap-2">
           <Button
             size="sm"
-            variant={mode === 'curl-to-http' ? 'default' : 'outline'}
+            variant={mode === 'curl-to-http' ? 'primary' : 'outline'}
             onClick={() => setMode('curl-to-http')}
           >
             <Terminal className="w-4 h-4 mr-1" />
@@ -224,7 +224,7 @@ Authorization: Bearer token123`);
           <ArrowLeftRight className="w-4 h-4 text-gray-400 self-center" />
           <Button
             size="sm"
-            variant={mode === 'http-to-curl' ? 'default' : 'outline'}
+            variant={mode === 'http-to-curl' ? 'primary' : 'outline'}
             onClick={() => setMode('http-to-curl')}
           >
             <Globe className="w-4 h-4 mr-1" />

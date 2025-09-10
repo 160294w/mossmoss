@@ -447,7 +447,7 @@ const userService = new UserService('/api');`,
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {t('codeHighlighter.label.result', { language: getDisplayLanguage() })}
+              {t('codeHighlighter.label.result').replace('{language}', getDisplayLanguage())}
             </h3>
             <Button onClick={handleCopy} variant="outline" size="sm">
               {isCopied ? t('codeHighlighter.button.copied') : t('codeHighlighter.button.copy')}

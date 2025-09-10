@@ -112,7 +112,7 @@ export function DateTimeFormatter({ onHistoryAdd }: ToolProps) {
       onHistoryAdd?.({
         toolId: 'datetime-formatter',
         input: `${value} (${type})`,
-        output: t('datetimeFormatter.historyOutput', { iso: date.toISOString() })
+        output: t('datetimeFormatter.historyOutput').replace('{iso}', date.toISOString())
       });
 
     } catch (err) {
@@ -168,21 +168,21 @@ export function DateTimeFormatter({ onHistoryAdd }: ToolProps) {
         <div className="flex flex-wrap gap-2">
           <Button
             size="sm"
-            variant={inputType === 'unix' ? 'default' : 'outline'}
+            variant={inputType === 'unix' ? 'primary' : 'outline'}
             onClick={() => setInputType('unix')}
           >
             {t('datetimeFormatter.format.unix')}
           </Button>
           <Button
             size="sm"
-            variant={inputType === 'iso' ? 'default' : 'outline'}
+            variant={inputType === 'iso' ? 'primary' : 'outline'}
             onClick={() => setInputType('iso')}
           >
             {t('datetimeFormatter.format.iso')}
           </Button>
           <Button
             size="sm"
-            variant={inputType === 'local' ? 'default' : 'outline'}
+            variant={inputType === 'local' ? 'primary' : 'outline'}
             onClick={() => setInputType('local')}
           >
             {t('datetimeFormatter.format.local')}
@@ -211,7 +211,7 @@ export function DateTimeFormatter({ onHistoryAdd }: ToolProps) {
         
         {/* フォーマット例 */}
         <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-          <p>{t('datetimeFormatter.supportedFormats', { formats: formatSamples[inputType].join(', ') })}</p>
+          <p>{t('datetimeFormatter.supportedFormats').replace('{formats}', formatSamples[inputType].join(', '))}</p>
         </div>
       </div>
 
@@ -239,7 +239,7 @@ export function DateTimeFormatter({ onHistoryAdd }: ToolProps) {
               {unixTime}
             </div>
             <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              {t('datetimeFormatter.unix.milliseconds', { ms: unixTime && (unixTime * 1000) })}
+              {t('datetimeFormatter.unix.milliseconds').replace('{ms}', unixTime ? (unixTime * 1000).toString() : '')}
             </div>
           </div>
 
