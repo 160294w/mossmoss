@@ -2,13 +2,11 @@ import { useState } from 'react';
 import * as yaml from 'js-yaml';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
-import { HistoryItem } from '../../types';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { ToolProps } from '../../types';
 
-interface YamlJsonConverterProps {
-  onHistoryAdd: (item: Omit<HistoryItem, 'timestamp'>) => void;
-}
-
-export function YamlJsonConverter() {
+export function YamlJsonConverter({ onHistoryAdd }: ToolProps) {
+  const { t } = useLanguage();
   const [inputText, setInputText] = useState('');
   const [outputText, setOutputText] = useState('');
   const [inputFormat, setInputFormat] = useState<'yaml' | 'json'>('yaml');
@@ -40,7 +38,7 @@ export function YamlJsonConverter() {
 
   const handleConvert = () => {
     if (!inputText.trim()) {
-      setError('入力テキストが空です');
+      setError(t('yamlJsonConverter.error.emptyInput'));
       setOutputText('');
       return;
     }
@@ -58,12 +56,13 @@ export function YamlJsonConverter() {
       
       setOutputText(result);
       
-//       onHistoryAdd({
-//         toolId: 'yaml-json-converter',
-//         output: `${conversionType}変換実行`
-//       });
+      onHistoryAdd?.({
+        toolId: 'yaml-json-converter',
+        input: `${inputFormat.toUpperCase()} text`,
+        output: t('yamlJsonConverter.history.converted', { format: inputFormat === 'yaml' ? 'JSON' : 'YAML' })
+      });
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '変換に失敗しました';
+      const errorMessage = err instanceof Error ? err.message : t('yamlJsonConverter.error.conversionFailed');
       setError(errorMessage);
       setOutputText('');
     }
@@ -113,33 +112,7 @@ export function YamlJsonConverter() {
   };
 
   const insertSampleYaml = () => {
-    const sampleYaml = `# サンプルYAML設定
-server:
-  host: localhost
-  port: 8080
-  ssl:
-    enabled: true
-    cert_path: "/path/to/cert.pem"
-    key_path: "/path/to/key.pem"
-
-database:
-  type: postgresql
-  connection:
-    host: db.example.com
-    port: 5432
-    database: myapp
-    username: user
-    password: secret
-
-features:
-  - authentication
-  - logging
-  - monitoring
-
-settings:
-  debug: false
-  max_connections: 100
-  timeout: 30s`;
+    const sampleYaml = t('yamlJsonConverter.sample.yaml');
 
     setInputText(sampleYaml);
     setInputFormat('yaml');
@@ -197,7 +170,7 @@ settings:
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                入力形式:
+                {t('yamlJsonConverter.label.inputFormat')}:
               </label>
               <select
                 value={inputFormat}
@@ -213,31 +186,31 @@ settings:
             </div>
             
             <Button onClick={handleFormatSwitch} variant="outline" size="sm">
-              ⇄ 入出力切り替え
+              ⇄ {t('yamlJsonConverter.button.switchFormat')}
             </Button>
           </div>
 
           <div className="flex space-x-2">
             <Button onClick={insertSampleYaml} variant="outline" size="sm">
-              YAMLサンプル
+              {t('yamlJsonConverter.button.yamlSample')}
             </Button>
             <Button onClick={insertSampleJson} variant="outline" size="sm">
-              JSONサンプル
+              {t('yamlJsonConverter.button.jsonSample')}
             </Button>
             <Button onClick={clearAll} variant="outline" size="sm">
-              クリア
+              {t('yamlJsonConverter.button.clear')}
             </Button>
           </div>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {inputFormat === 'yaml' ? 'YAML' : 'JSON'}入力
+            {t('yamlJsonConverter.label.input', { format: inputFormat === 'yaml' ? 'YAML' : 'JSON' })}
           </label>
           <textarea
             value={inputText}
             onChange={(e) => handleInputChange(e.target.value)}
-            placeholder={`${inputFormat === 'yaml' ? 'YAML' : 'JSON'}を入力してください...`}
+            placeholder={t('yamlJsonConverter.placeholder.input', { format: inputFormat === 'yaml' ? 'YAML' : 'JSON' })}
             rows={12}
             className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono text-sm resize-y"
           />
@@ -246,18 +219,18 @@ settings:
         {error && (
           <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
             <p className="text-red-600 dark:text-red-400 text-sm">
-              <strong>エラー:</strong> {error}
+              <strong>{t('yamlJsonConverter.label.error')}:</strong> {error}
             </p>
           </div>
         )}
 
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {inputFormat === 'yaml' ? 'JSON' : 'YAML'}出力
+            {t('yamlJsonConverter.label.output', { format: inputFormat === 'yaml' ? 'JSON' : 'YAML' })}
           </h3>
           <div className="flex space-x-2">
             <Button onClick={handleConvert} variant="outline" size="sm">
-              変換実行
+              {t('yamlJsonConverter.button.convert')}
             </Button>
             <Button 
               onClick={handleCopy} 
@@ -265,7 +238,7 @@ settings:
               size="sm"
               disabled={!outputText}
             >
-              {isCopied ? 'コピー済み!' : 'コピー'}
+              {isCopied ? t('yamlJsonConverter.button.copied') : t('yamlJsonConverter.button.copy')}
             </Button>
           </div>
         </div>
@@ -273,19 +246,19 @@ settings:
         <textarea
           value={outputText}
           readOnly
-          placeholder={`変換された${inputFormat === 'yaml' ? 'JSON' : 'YAML'}がここに表示されます...`}
+          placeholder={t('yamlJsonConverter.placeholder.output', { format: inputFormat === 'yaml' ? 'JSON' : 'YAML' })}
           rows={12}
           className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm resize-y"
         />
 
         <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-          <p><strong>機能:</strong></p>
+          <p><strong>{t('yamlJsonConverter.features.title')}:</strong></p>
           <ul className="list-disc list-inside space-y-1">
-            <li><strong>YAML → JSON:</strong> YAML形式をJSON形式に変換</li>
-            <li><strong>JSON → YAML:</strong> JSON形式をYAML形式に変換</li>
-            <li><strong>リアルタイム変換:</strong> 入力と同時に自動変換</li>
-            <li><strong>入出力切り替え:</strong> 変換結果を入力として再利用可能</li>
-            <li><strong>エラー検出:</strong> 構文エラーを詳細に表示</li>
+            <li><strong>{t('yamlJsonConverter.features.yamlToJson')}:</strong> {t('yamlJsonConverter.features.yamlToJsonDesc')}</li>
+            <li><strong>{t('yamlJsonConverter.features.jsonToYaml')}:</strong> {t('yamlJsonConverter.features.jsonToYamlDesc')}</li>
+            <li><strong>{t('yamlJsonConverter.features.realtime')}:</strong> {t('yamlJsonConverter.features.realtimeDesc')}</li>
+            <li><strong>{t('yamlJsonConverter.features.switch')}:</strong> {t('yamlJsonConverter.features.switchDesc')}</li>
+            <li><strong>{t('yamlJsonConverter.features.errorDetection')}:</strong> {t('yamlJsonConverter.features.errorDetectionDesc')}</li>
           </ul>
         </div>
       </div>

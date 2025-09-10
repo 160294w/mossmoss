@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { Dices, RefreshCw } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { ToolProps } from '../../types';
 
 interface GeneratorOptions {
@@ -14,7 +15,8 @@ interface GeneratorOptions {
   excludeAmbiguous: boolean;
 }
 
-export function RandomGenerator() {
+export function RandomGenerator({ onHistoryAdd }: ToolProps) {
+  const { t } = useLanguage();
   const [options, setOptions] = useState<GeneratorOptions>({
     length: 12,
     includeNumbers: true,
@@ -62,7 +64,7 @@ export function RandomGenerator() {
     }
 
     if (availableChars.length === 0) {
-      return 'エラー: 使用可能な文字が選択されていません';
+      return t('randomGenerator.error.noCharsSelected');
     }
 
     // ランダム文字列生成
@@ -82,21 +84,21 @@ export function RandomGenerator() {
     // 履歴に追加
     setGenerationHistory(prev => [newString, ...prev.slice(0, 4)]); // 最新5件まで
 
-    if (onHistoryAdd && !newString.startsWith('エラー:')) {
-//       onHistoryAdd({
-//         toolId: 'random-generator',
-//         input: `長さ:${options.length}, 文字種:${getCharTypeString()}`,
-//         output: newString
-//       });
+    if (onHistoryAdd && !newString.startsWith(t('randomGenerator.error.prefix'))) {
+      onHistoryAdd({
+        toolId: 'random-generator',
+        input: `${t('randomGenerator.history.length')}:${options.length}, ${t('randomGenerator.history.charTypes')}:${getCharTypeString()}`,
+        output: newString
+      });
     }
   };
 
   const getCharTypeString = () => {
     const types = [];
-    if (options.includeNumbers) types.push('数字');
-    if (options.includeUppercase) types.push('大文字');
-    if (options.includeLowercase) types.push('小文字');
-    if (options.includeSymbols) types.push('記号');
+    if (options.includeNumbers) types.push(t('randomGenerator.charType.numbers'));
+    if (options.includeUppercase) types.push(t('randomGenerator.charType.uppercase'));
+    if (options.includeLowercase) types.push(t('randomGenerator.charType.lowercase'));
+    if (options.includeSymbols) types.push(t('randomGenerator.charType.symbols'));
     return types.join(', ');
   };
 
@@ -112,10 +114,10 @@ export function RandomGenerator() {
   };
 
   const presetConfigs = [
-    { name: 'パスワード(強)', config: { length: 16, includeNumbers: true, includeUppercase: true, includeLowercase: true, includeSymbols: true, excludeSimilar: true, excludeAmbiguous: false } },
-    { name: 'パスワード(中)', config: { length: 12, includeNumbers: true, includeUppercase: true, includeLowercase: true, includeSymbols: false, excludeSimilar: true, excludeAmbiguous: false } },
-    { name: 'PIN', config: { length: 6, includeNumbers: true, includeUppercase: false, includeLowercase: false, includeSymbols: false, excludeSimilar: false, excludeAmbiguous: false } },
-    { name: 'トークン', config: { length: 32, includeNumbers: true, includeUppercase: true, includeLowercase: true, includeSymbols: false, excludeSimilar: false, excludeAmbiguous: false } },
+    { name: t('randomGenerator.preset.strongPassword'), config: { length: 16, includeNumbers: true, includeUppercase: true, includeLowercase: true, includeSymbols: true, excludeSimilar: true, excludeAmbiguous: false } },
+    { name: t('randomGenerator.preset.mediumPassword'), config: { length: 12, includeNumbers: true, includeUppercase: true, includeLowercase: true, includeSymbols: false, excludeSimilar: true, excludeAmbiguous: false } },
+    { name: t('randomGenerator.preset.pin'), config: { length: 6, includeNumbers: true, includeUppercase: false, includeLowercase: false, includeSymbols: false, excludeSimilar: false, excludeAmbiguous: false } },
+    { name: t('randomGenerator.preset.token'), config: { length: 32, includeNumbers: true, includeUppercase: true, includeLowercase: true, includeSymbols: false, excludeSimilar: false, excludeAmbiguous: false } },
   ];
 
   return (
@@ -123,7 +125,7 @@ export function RandomGenerator() {
       {/* プリセット */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          プリセット
+          {t('randomGenerator.label.preset')}
         </label>
         <div className="flex flex-wrap gap-2">
           {presetConfigs.map((preset) => (
@@ -142,7 +144,7 @@ export function RandomGenerator() {
       {/* 長さ設定 */}
       <div>
         <label htmlFor="length" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          文字数: {options.length}
+          {t('randomGenerator.label.length')}: {options.length}
         </label>
         <input
           id="length"
@@ -162,7 +164,7 @@ export function RandomGenerator() {
       {/* 文字種選択 */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          使用する文字種
+          {t('randomGenerator.label.charTypes')}
         </label>
         <div className="grid grid-cols-2 gap-3">
           <label className="flex items-center">
@@ -172,7 +174,7 @@ export function RandomGenerator() {
               onChange={(e) => setOptions(prev => ({ ...prev, includeNumbers: e.target.checked }))}
               className="rounded border-gray-300 dark:border-gray-600 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"
             />
-            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">数字 (0-9)</span>
+            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t('randomGenerator.option.numbers')}</span>
           </label>
 
           <label className="flex items-center">
@@ -182,7 +184,7 @@ export function RandomGenerator() {
               onChange={(e) => setOptions(prev => ({ ...prev, includeUppercase: e.target.checked }))}
               className="rounded border-gray-300 dark:border-gray-600 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"
             />
-            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">大文字 (A-Z)</span>
+            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t('randomGenerator.option.uppercase')}</span>
           </label>
 
           <label className="flex items-center">
@@ -192,7 +194,7 @@ export function RandomGenerator() {
               onChange={(e) => setOptions(prev => ({ ...prev, includeLowercase: e.target.checked }))}
               className="rounded border-gray-300 dark:border-gray-600 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"
             />
-            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">小文字 (a-z)</span>
+            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t('randomGenerator.option.lowercase')}</span>
           </label>
 
           <label className="flex items-center">
@@ -202,7 +204,7 @@ export function RandomGenerator() {
               onChange={(e) => setOptions(prev => ({ ...prev, includeSymbols: e.target.checked }))}
               className="rounded border-gray-300 dark:border-gray-600 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"
             />
-            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">記号</span>
+            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t('randomGenerator.option.symbols')}</span>
           </label>
         </div>
       </div>
@@ -210,7 +212,7 @@ export function RandomGenerator() {
       {/* 除外オプション */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          除外オプション
+          {t('randomGenerator.label.excludeOptions')}
         </label>
         <div className="space-y-2">
           <label className="flex items-center">
@@ -220,7 +222,7 @@ export function RandomGenerator() {
               onChange={(e) => setOptions(prev => ({ ...prev, excludeSimilar: e.target.checked }))}
               className="rounded border-gray-300 dark:border-gray-600 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"
             />
-            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">似た文字を除外 (il1Lo0O)</span>
+            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t('randomGenerator.option.excludeSimilar')}</span>
           </label>
 
           <label className="flex items-center">
@@ -230,7 +232,7 @@ export function RandomGenerator() {
               onChange={(e) => setOptions(prev => ({ ...prev, excludeAmbiguous: e.target.checked }))}
               className="rounded border-gray-300 dark:border-gray-600 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"
             />
-            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">紛らわしい記号を除外 ({}[]()等)</span>
+            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t('randomGenerator.option.excludeAmbiguous')}</span>
           </label>
         </div>
       </div>
@@ -239,7 +241,7 @@ export function RandomGenerator() {
       <div>
         <Button onClick={handleGenerate} size="lg" className="w-full md:w-auto">
           <Dices className="w-4 h-4 mr-1" />
-          ランダム文字列を生成
+          {t('randomGenerator.button.generate')}
         </Button>
       </div>
 
@@ -247,7 +249,7 @@ export function RandomGenerator() {
       {generatedText && (
         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            生成結果
+            {t('randomGenerator.label.result')}
           </label>
           <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md p-3 mb-3">
             <code className="text-lg font-mono break-all text-gray-900 dark:text-white">
@@ -260,14 +262,14 @@ export function RandomGenerator() {
               onClick={handleCopy}
               className="flex items-center gap-2"
             >
-              {isCopied ? '✓ コピー済み' : '📋 コピー'}
+              {isCopied ? t('randomGenerator.button.copied') : t('randomGenerator.button.copy')}
             </Button>
             <Button 
               variant="outline" 
               onClick={handleGenerate}
             >
               <RefreshCw className="w-4 h-4 mr-1" />
-              再生成
+              {t('randomGenerator.button.regenerate')}
             </Button>
           </div>
         </div>
@@ -276,7 +278,7 @@ export function RandomGenerator() {
       {/* 生成履歴 */}
       {generationHistory.length > 0 && (
         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">生成履歴</h3>
+          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t('randomGenerator.label.history')}</h3>
           <div className="space-y-2">
             {generationHistory.map((item, index) => (
               <div key={index} className="flex items-center justify-between bg-white dark:bg-gray-800 rounded p-2">
@@ -299,14 +301,14 @@ export function RandomGenerator() {
 
       {/* 文字種プレビュー */}
       <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">使用される文字</h3>
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('randomGenerator.label.usedChars')}</h3>
         <div className="text-sm text-gray-600 dark:text-gray-400 font-mono break-all">
-          {options.includeNumbers && <div>数字: {charSets.numbers}</div>}
-          {options.includeUppercase && <div>大文字: {charSets.uppercase}</div>}
-          {options.includeLowercase && <div>小文字: {charSets.lowercase}</div>}
-          {options.includeSymbols && <div>記号: {charSets.symbols}</div>}
+          {options.includeNumbers && <div>{t('randomGenerator.charType.numbers')}: {charSets.numbers}</div>}
+          {options.includeUppercase && <div>{t('randomGenerator.charType.uppercase')}: {charSets.uppercase}</div>}
+          {options.includeLowercase && <div>{t('randomGenerator.charType.lowercase')}: {charSets.lowercase}</div>}
+          {options.includeSymbols && <div>{t('randomGenerator.charType.symbols')}: {charSets.symbols}</div>}
           {!options.includeNumbers && !options.includeUppercase && !options.includeLowercase && !options.includeSymbols && (
-            <div className="text-red-500">文字種が選択されていません</div>
+            <div className="text-red-500">{t('randomGenerator.error.noCharsSelected')}</div>
           )}
         </div>
       </div>

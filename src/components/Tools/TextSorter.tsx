@@ -1,16 +1,13 @@
 import { useState } from 'react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
-import { HistoryItem } from '../../types';
-
-interface TextSorterProps {
-  onHistoryAdd: (item: Omit<HistoryItem, 'timestamp'>) => void;
-}
+import { useLanguage } from '../../contexts/LanguageContext';
+import { ToolProps } from '../../types';
 
 type SortMode = 'alphabetical' | 'numerical' | 'length' | 'random';
 type SortOrder = 'asc' | 'desc';
 
-export function TextSorter() {
+export function TextSorter({ onHistoryAdd }: ToolProps) {
   const [inputText, setInputText] = useState('');
   const [sortedText, setSortedText] = useState('');
   const [sortMode, setSortMode] = useState<SortMode>('alphabetical');
@@ -19,6 +16,7 @@ export function TextSorter() {
   const [removeDuplicates, setRemoveDuplicates] = useState(false);
   const [removeEmpty, setRemoveEmpty] = useState(true);
   const { copyToClipboard, isCopied } = useCopyToClipboard();
+  const { t } = useLanguage();
 
   const sortLines = (lines: string[]): string[] => {
     let processedLines = [...lines];
@@ -80,20 +78,20 @@ export function TextSorter() {
     
     setSortedText(result);
 
-//     onHistoryAdd({
-//       toolId: 'text-sorter',
-//       output: `${lines.length}行をソート（${getSortModeLabel()}）`
-//     });
+    onHistoryAdd?.({
+      toolId: 'text-sorter',
+      input: t('textSorter.historyInput').replace('{count}', lines.length.toString()),
+      output: t('textSorter.historyOutput').replace('{mode}', getSortModeLabel())
+    });
   };
 
   const getSortModeLabel = () => {
-    const modes = {
-      alphabetical: 'アルファベット順',
-      numerical: '数値順',
-      length: '文字数順',
-      random: 'ランダム'
-    };
-    return modes[sortMode] + (sortMode !== 'random' ? (sortOrder === 'asc' ? '（昇順）' : '（降順）') : '');
+    const modeLabel = t(`textSorter.mode.${sortMode}`);
+    if (sortMode === 'random') {
+      return modeLabel;
+    }
+    const orderLabel = t(sortOrder === 'asc' ? 'textSorter.order.asc.short' : 'textSorter.order.desc.short');
+    return modeLabel + orderLabel;
   };
 
   const handleCopy = () => {
@@ -147,16 +145,16 @@ export function TextSorter() {
         <div>
           <div className="flex items-center justify-between mb-2">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              ソートするテキスト（1行に1項目）
+              {t('textSorter.input.label')}
             </label>
             <Button onClick={insertSample} variant="outline" size="sm">
-              サンプル挿入
+              {t('textSorter.insertSample')}
             </Button>
           </div>
           <textarea
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="ソートしたい項目を1行ずつ入力してください..."
+            placeholder={t('textSorter.input.placeholder')}
             rows={8}
             className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm resize-y"
           />
@@ -165,32 +163,32 @@ export function TextSorter() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              ソート方法
+              {t('textSorter.sortMethod')}
             </label>
             <select
               value={sortMode}
               onChange={(e) => setSortMode(e.target.value as SortMode)}
               className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
             >
-              <option value="alphabetical">アルファベット順</option>
-              <option value="numerical">数値順</option>
-              <option value="length">文字数順</option>
-              <option value="random">ランダム</option>
+              <option value="alphabetical">{t('textSorter.mode.alphabetical')}</option>
+              <option value="numerical">{t('textSorter.mode.numerical')}</option>
+              <option value="length">{t('textSorter.mode.length')}</option>
+              <option value="random">{t('textSorter.mode.random')}</option>
             </select>
           </div>
 
           {sortMode !== 'random' && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                ソート順序
+                {t('textSorter.sortOrder')}
               </label>
               <select
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value as SortOrder)}
                 className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
               >
-                <option value="asc">昇順（A→Z, 小→大, 短→長）</option>
-                <option value="desc">降順（Z→A, 大→小, 長→短）</option>
+                <option value="asc">{t('textSorter.order.asc')}</option>
+                <option value="desc">{t('textSorter.order.desc')}</option>
               </select>
             </div>
           )}
@@ -206,7 +204,7 @@ export function TextSorter() {
                 className="mr-2"
               />
               <span className="text-gray-700 dark:text-gray-300">
-                大文字小文字を区別する
+                {t('textSorter.caseSensitive')}
               </span>
             </label>
 
@@ -218,7 +216,7 @@ export function TextSorter() {
                 className="mr-2"
               />
               <span className="text-gray-700 dark:text-gray-300">
-                重複を削除
+                {t('textSorter.removeDuplicates')}
               </span>
             </label>
 
@@ -230,14 +228,14 @@ export function TextSorter() {
                 className="mr-2"
               />
               <span className="text-gray-700 dark:text-gray-300">
-                空行を削除
+                {t('textSorter.removeEmpty')}
               </span>
             </label>
           </div>
         </div>
 
         <Button onClick={handleSort} className="w-full">
-          ソート実行
+          {t('textSorter.execute')}
         </Button>
       </div>
 
@@ -245,14 +243,14 @@ export function TextSorter() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              ソート結果 ({getSortModeLabel()})
+              {t('textSorter.result')} ({getSortModeLabel()})
             </h3>
             <div className="flex gap-2">
               <Button onClick={handleReverse} variant="outline" size="sm">
-                順序を逆転
+                {t('textSorter.reverse')}
               </Button>
               <Button onClick={handleCopy} variant="outline" size="sm">
-                {isCopied ? 'コピー済み!' : 'コピー'}
+                {isCopied ? t('common.copied') : t('common.copy')}
               </Button>
             </div>
           </div>
@@ -266,34 +264,34 @@ export function TextSorter() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-              <div className="font-medium text-blue-600 dark:text-blue-400">入力行数</div>
+              <div className="font-medium text-blue-600 dark:text-blue-400">{t('textSorter.stats.inputLines')}</div>
               <div className="text-xl font-bold text-blue-700 dark:text-blue-300">{stats.inputCount}</div>
             </div>
             <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg">
-              <div className="font-medium text-green-600 dark:text-green-400">出力行数</div>
+              <div className="font-medium text-green-600 dark:text-green-400">{t('textSorter.stats.outputLines')}</div>
               <div className="text-xl font-bold text-green-700 dark:text-green-300">{stats.outputCount}</div>
             </div>
             {removeEmpty && stats.removedEmpty > 0 && (
               <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg">
-                <div className="font-medium text-yellow-600 dark:text-yellow-400">削除空行</div>
+                <div className="font-medium text-yellow-600 dark:text-yellow-400">{t('textSorter.stats.removedEmpty')}</div>
                 <div className="text-xl font-bold text-yellow-700 dark:text-yellow-300">{stats.removedEmpty}</div>
               </div>
             )}
             {removeDuplicates && stats.removedDuplicates > 0 && (
               <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">
-                <div className="font-medium text-red-600 dark:text-red-400">削除重複</div>
+                <div className="font-medium text-red-600 dark:text-red-400">{t('textSorter.stats.removedDuplicates')}</div>
                 <div className="text-xl font-bold text-red-700 dark:text-red-300">{stats.removedDuplicates}</div>
               </div>
             )}
           </div>
 
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            <p><strong>ソート方法の説明:</strong></p>
+            <p><strong>{t('textSorter.explanation.title')}</strong></p>
             <ul className="list-disc list-inside space-y-1 mt-1">
-              <li><strong>アルファベット順:</strong> 文字コード順でソート（日本語対応）</li>
-              <li><strong>数値順:</strong> 数値として解析してソート（文字列は0として扱われます）</li>
-              <li><strong>文字数順:</strong> 文字列の長さでソート</li>
-              <li><strong>ランダム:</strong> ランダムな順序でシャッフル</li>
+              <li><strong>{t('textSorter.mode.alphabetical')}:</strong> {t('textSorter.explanation.alphabetical')}</li>
+              <li><strong>{t('textSorter.mode.numerical')}:</strong> {t('textSorter.explanation.numerical')}</li>
+              <li><strong>{t('textSorter.mode.length')}:</strong> {t('textSorter.explanation.length')}</li>
+              <li><strong>{t('textSorter.mode.random')}:</strong> {t('textSorter.explanation.random')}</li>
             </ul>
           </div>
         </div>

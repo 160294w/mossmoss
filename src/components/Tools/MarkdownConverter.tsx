@@ -3,13 +3,11 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
-import { HistoryItem } from '../../types';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { ToolProps } from '../../types';
 
-interface MarkdownConverterProps {
-  onHistoryAdd: (item: Omit<HistoryItem, 'timestamp'>) => void;
-}
-
-export function MarkdownConverter() {
+export function MarkdownConverter({ onHistoryAdd }: ToolProps) {
+  const { t } = useLanguage();
   const [mode, setMode] = useState<'md-to-html' | 'html-to-md'>('md-to-html');
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
@@ -21,7 +19,7 @@ export function MarkdownConverter() {
     let markdown = html;
 
     // HTMLタグをMarkdownに変換
-    markdown = markdown.replace(/<h([1-6])>(.*?)<\/h[1-6]>/gi, (match, level, content) => {
+    markdown = markdown.replace(/<h([1-6])>(.*?)<\/h[1-6]>/gi, (_, level, content) => {
       return '#'.repeat(parseInt(level)) + ' ' + content + '\n\n';
     });
 
@@ -35,15 +33,15 @@ export function MarkdownConverter() {
     markdown = markdown.replace(/<pre><code>(.*?)<\/code><\/pre>/gis, '```\n$1\n```');
     markdown = markdown.replace(/<a href="(.*?)">(.*?)<\/a>/gi, '[$2]($1)');
     markdown = markdown.replace(/<img src="(.*?)" alt="(.*?)".*?>/gi, '![$2]($1)');
-    markdown = markdown.replace(/<ul>(.*?)<\/ul>/gis, (match, content) => {
+    markdown = markdown.replace(/<ul>(.*?)<\/ul>/gis, (_, content) => {
       return content.replace(/<li>(.*?)<\/li>/gi, '- $1\n') + '\n';
     });
-    markdown = markdown.replace(/<ol>(.*?)<\/ol>/gis, (match, content) => {
+    markdown = markdown.replace(/<ol>(.*?)<\/ol>/gis, (_, content) => {
       let counter = 1;
       return content.replace(/<li>(.*?)<\/li>/gi, () => `${counter++}. $1\n`) + '\n';
     });
-    markdown = markdown.replace(/<blockquote>(.*?)<\/blockquote>/gis, (match, content) => {
-      return content.split('\n').map(line => line.trim() ? `> ${line.trim()}` : '>').join('\n') + '\n\n';
+    markdown = markdown.replace(/<blockquote>(.*?)<\/blockquote>/gis, (_, content) => {
+      return content.split('\n').map((line: any) => line.trim() ? `> ${line.trim()}` : '>').join('\n') + '\n\n';
     });
 
     // 余分な空行を削除
@@ -53,38 +51,40 @@ export function MarkdownConverter() {
     return markdown;
   };
 
-  const handleConvert = () => {
+  const handleConvert = async () => {
     if (!input.trim()) {
-      setError('変換する内容を入力してください');
+      setError(t('markdownConverter.error.emptyInput'));
       return;
     }
 
     try {
       if (mode === 'md-to-html') {
         // Markdown to HTML
-        const rawHtml = marked(input);
+        const rawHtml = await marked(input);
         const sanitizedHtml = DOMPurify.sanitize(rawHtml);
         setOutput(sanitizedHtml);
         
-//         onHistoryAdd({
-//           toolId: 'markdown-converter',
-//           output: 'Markdown → HTML 変換'
-//         });
+        onHistoryAdd?.({
+          toolId: 'markdown-converter',
+          input: input.slice(0, 50) + (input.length > 50 ? '...' : ''),
+          output: t('markdownConverter.history.mdToHtml')
+        });
       } else {
         // HTML to Markdown
         const markdown = htmlToMarkdown(input);
         setOutput(markdown);
         
-//         onHistoryAdd({
-//           toolId: 'markdown-converter',
-//           output: 'HTML → Markdown 変換'
-//         });
+        onHistoryAdd?.({
+          toolId: 'markdown-converter',
+          input: input.slice(0, 50) + (input.length > 50 ? '...' : ''),
+          output: t('markdownConverter.history.htmlToMd')
+        });
       }
       
       setError('');
     } catch (err) {
-      setError('変換中にエラーが発生しました');
-      console.error('変換エラー:', err);
+      setError(t('markdownConverter.error.conversionError'));
+      console.error('Conversion error:', err);
     }
   };
 
@@ -92,50 +92,9 @@ export function MarkdownConverter() {
     copyToClipboard(output);
   };
 
-  const sampleMarkdown = `# サンプル見出し
+  const sampleMarkdown = t('markdownConverter.sample.markdown');
 
-これは**太字**と*斜体*のテキストです。
-
-## リスト
-
-- 項目1
-- 項目2
-- 項目3
-
-## コード
-
-\`inline code\`
-
-\`\`\`javascript
-function hello() {
-  console.log("Hello, World!");
-}
-\`\`\`
-
-## リンク
-
-[リンクテキスト](https://example.com)
-
-> これは引用文です。`;
-
-  const sampleHtml = `<h1>サンプル見出し</h1>
-<p>これは<strong>太字</strong>と<em>斜体</em>のテキストです。</p>
-<h2>リスト</h2>
-<ul>
-  <li>項目1</li>
-  <li>項目2</li>
-  <li>項目3</li>
-</ul>
-<h2>コード</h2>
-<p><code>inline code</code></p>
-<pre><code>function hello() {
-  console.log("Hello, World!");
-}</code></pre>
-<h2>リンク</h2>
-<p><a href="https://example.com">リンクテキスト</a></p>
-<blockquote>
-  <p>これは引用文です。</p>
-</blockquote>`;
+  const sampleHtml = t('markdownConverter.sample.html');
 
   const insertSample = () => {
     setInput(mode === 'md-to-html' ? sampleMarkdown : sampleHtml);
@@ -146,7 +105,7 @@ function hello() {
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            変換モード
+            {t('markdownConverter.label.conversionMode')}
           </label>
           <div className="flex gap-4">
             <label className="flex items-center">
@@ -179,16 +138,16 @@ function hello() {
         <div>
           <div className="flex items-center justify-between mb-2">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              {mode === 'md-to-html' ? 'Markdown入力' : 'HTML入力'}
+              {mode === 'md-to-html' ? t('markdownConverter.label.markdownInput') : t('markdownConverter.label.htmlInput')}
             </label>
             <Button onClick={insertSample} variant="outline" size="sm">
-              サンプル挿入
+              {t('markdownConverter.button.insertSample')}
             </Button>
           </div>
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={mode === 'md-to-html' ? 'Markdownを入力してください...' : 'HTMLを入力してください...'}
+            placeholder={mode === 'md-to-html' ? t('markdownConverter.placeholder.markdownInput') : t('markdownConverter.placeholder.htmlInput')}
             rows={10}
             className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono text-sm resize-y"
           />
@@ -201,7 +160,7 @@ function hello() {
         )}
 
         <Button onClick={handleConvert} className="w-full">
-          変換実行
+          {t('markdownConverter.button.convert')}
         </Button>
       </div>
 
@@ -209,17 +168,17 @@ function hello() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {mode === 'md-to-html' ? 'HTML出力' : 'Markdown出力'}
+              {mode === 'md-to-html' ? t('markdownConverter.label.htmlOutput') : t('markdownConverter.label.markdownOutput')}
             </h3>
             <Button onClick={handleCopy} variant="outline" size="sm">
-              {isCopied ? 'コピー済み!' : 'コピー'}
+              {isCopied ? t('markdownConverter.button.copied') : t('markdownConverter.button.copy')}
             </Button>
           </div>
 
           <div className="space-y-4">
             <div>
               <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                変換結果（コード）
+                {t('markdownConverter.label.conversionResult')}
               </div>
               <textarea
                 value={output}
@@ -232,7 +191,7 @@ function hello() {
             {mode === 'md-to-html' && (
               <div>
                 <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  プレビュー
+                  {t('markdownConverter.label.preview')}
                 </div>
                 <div
                   className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 prose dark:prose-invert max-w-none"
@@ -243,10 +202,10 @@ function hello() {
           </div>
 
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            <p><strong>注意:</strong></p>
+            <p><strong>{t('markdownConverter.info.noteTitle')}:</strong></p>
             <ul className="list-disc list-inside space-y-1">
-              <li>HTML → Markdown変換は簡易実装のため、複雑なHTMLは正確に変換されない場合があります</li>
-              <li>セキュリティのため、出力HTMLは自動的にサニタイズされます</li>
+              <li>{t('markdownConverter.info.htmlToMdLimitation')}</li>
+              <li>{t('markdownConverter.info.securityNote')}</li>
             </ul>
           </div>
         </div>

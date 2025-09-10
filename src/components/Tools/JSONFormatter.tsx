@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { AlertTriangle, Check, Copy, RotateCcw } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 export function JSONFormatter() {
   const [inputJSON, setInputJSON] = useState('');
@@ -10,6 +11,7 @@ export function JSONFormatter() {
   const [indentSize, setIndentSize] = useState(2);
   const [isValid, setIsValid] = useState(false);
   const { copyToClipboard, isCopied } = useCopyToClipboard();
+  const { t } = useLanguage();
 
   // JSON解析とフォーマット関数
   const formatJSON = (jsonString: string, indent: number): { formatted: string; error: string; valid: boolean } => {
@@ -23,7 +25,7 @@ export function JSONFormatter() {
       const formatted = JSON.stringify(parsed, null, indent);
       return { formatted, error: '', valid: true };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'JSONの解析に失敗しました';
+      const errorMessage = err instanceof Error ? err.message : t('jsonFormatter.error.title');
       return { formatted: '', error: errorMessage, valid: false };
     }
   };
@@ -135,7 +137,7 @@ export function JSONFormatter() {
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2">
           <label htmlFor="indent-size" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            インデント:
+            {t('jsonFormatter.settings.indent')}:
           </label>
           <select
             id="indent-size"
@@ -143,18 +145,18 @@ export function JSONFormatter() {
             onChange={(e) => setIndentSize(Number(e.target.value))}
             className="px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
-            <option value={2}>2スペース</option>
-            <option value={4}>4スペース</option>
-            <option value={1}>タブ</option>
+            <option value={2}>{t('jsonFormatter.settings.twoSpaces')}</option>
+            <option value={4}>{t('jsonFormatter.settings.fourSpaces')}</option>
+            <option value={1}>{t('jsonFormatter.settings.tab')}</option>
           </select>
         </div>
 
         <div className="flex gap-2">
           <Button size="sm" variant="outline" onClick={minifyJSON} disabled={!isValid}>
-            圧縮
+            {t('jsonFormatter.button.compress')}
           </Button>
           <Button size="sm" variant="outline" onClick={insertSample}>
-            サンプル挿入
+            {t('jsonFormatter.button.insertSample')}
           </Button>
         </div>
       </div>
@@ -162,13 +164,13 @@ export function JSONFormatter() {
       {/* 入力エリア */}
       <div>
         <label htmlFor="input-json" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          JSON文字列を入力
+          {t('jsonFormatter.input.label')}
         </label>
         <textarea
           id="input-json"
           value={inputJSON}
           onChange={(e) => setInputJSON(e.target.value)}
-          placeholder='{"key": "value", "array": [1, 2, 3]}'
+          placeholder={t('jsonFormatter.input.placeholder')}
           className="w-full h-48 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-y font-mono text-sm"
         />
         
@@ -178,7 +180,7 @@ export function JSONFormatter() {
             <div className="flex items-start">
               <AlertTriangle className="w-4 h-4 text-red-500 mr-2" />
               <div className="text-sm">
-                <div className="font-medium text-red-800 dark:text-red-200 mb-1">JSONエラー</div>
+                <div className="font-medium text-red-800 dark:text-red-200 mb-1">{t('jsonFormatter.error.title')}</div>
                 <div className="text-red-600 dark:text-red-300 font-mono">{error}</div>
               </div>
             </div>
@@ -190,7 +192,7 @@ export function JSONFormatter() {
           <div className="mt-2 p-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md">
             <div className="flex items-center text-sm text-green-800 dark:text-green-200">
               <Check className="w-4 h-4 mr-2" />
-              有効なJSONです
+              {t('jsonFormatter.success')}
             </div>
           </div>
         )}
@@ -199,7 +201,7 @@ export function JSONFormatter() {
       {/* 出力エリア */}
       <div>
         <label htmlFor="output-json" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          整形されたJSON
+          {t('jsonFormatter.output.label')}
         </label>
         <textarea
           id="output-json"
@@ -217,9 +219,9 @@ export function JSONFormatter() {
           className="flex items-center gap-2"
         >
           {isCopied ? (
-            <><Check className="w-4 h-4 mr-1" /> コピー済み</>
+            <><Check className="w-4 h-4 mr-1" /> {t('jsonFormatter.copied')}</>
           ) : (
-            <><Copy className="w-4 h-4 mr-1" /> 結果をコピー</>
+            <><Copy className="w-4 h-4 mr-1" /> {t('jsonFormatter.button.copyResult')}</>
           )}
         </Button>
         <Button 
@@ -228,46 +230,46 @@ export function JSONFormatter() {
           disabled={!inputJSON}
         >
           <RotateCcw className="w-4 h-4 mr-1" />
-          リセット
+          {t('jsonFormatter.button.reset')}
         </Button>
       </div>
 
       {/* JSON統計情報 */}
       {stats && (
         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">JSON統計</h3>
+          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t('jsonFormatter.stats.title')}</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
               <div className="font-semibold text-gray-900 dark:text-white">{stats.size}B</div>
-              <div className="text-gray-500 dark:text-gray-400">元サイズ</div>
+              <div className="text-gray-500 dark:text-gray-400">{t('jsonFormatter.stats.originalSize')}</div>
             </div>
             <div>
               <div className="font-semibold text-gray-900 dark:text-white">{stats.formattedSize}B</div>
-              <div className="text-gray-500 dark:text-gray-400">整形後</div>
+              <div className="text-gray-500 dark:text-gray-400">{t('jsonFormatter.stats.formattedSize')}</div>
             </div>
             <div>
               <div className="font-semibold text-gray-900 dark:text-white">{stats.objects}</div>
-              <div className="text-gray-500 dark:text-gray-400">オブジェクト</div>
+              <div className="text-gray-500 dark:text-gray-400">{t('jsonFormatter.stats.objects')}</div>
             </div>
             <div>
               <div className="font-semibold text-gray-900 dark:text-white">{stats.arrays}</div>
-              <div className="text-gray-500 dark:text-gray-400">配列</div>
+              <div className="text-gray-500 dark:text-gray-400">{t('jsonFormatter.stats.arrays')}</div>
             </div>
             <div>
               <div className="font-semibold text-gray-900 dark:text-white">{stats.keys}</div>
-              <div className="text-gray-500 dark:text-gray-400">キー数</div>
+              <div className="text-gray-500 dark:text-gray-400">{t('jsonFormatter.stats.keys')}</div>
             </div>
             <div>
               <div className="font-semibold text-gray-900 dark:text-white">{stats.strings}</div>
-              <div className="text-gray-500 dark:text-gray-400">文字列</div>
+              <div className="text-gray-500 dark:text-gray-400">{t('jsonFormatter.stats.strings')}</div>
             </div>
             <div>
               <div className="font-semibold text-gray-900 dark:text-white">{stats.numbers}</div>
-              <div className="text-gray-500 dark:text-gray-400">数値</div>
+              <div className="text-gray-500 dark:text-gray-400">{t('jsonFormatter.stats.numbers')}</div>
             </div>
             <div>
               <div className="font-semibold text-gray-900 dark:text-white">{stats.booleans}</div>
-              <div className="text-gray-500 dark:text-gray-400">真偽値</div>
+              <div className="text-gray-500 dark:text-gray-400">{t('jsonFormatter.stats.booleans')}</div>
             </div>
           </div>
         </div>
@@ -275,12 +277,12 @@ export function JSONFormatter() {
 
       {/* 使用例 */}
       <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">使用方法</h3>
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('jsonFormatter.usage.title')}</h3>
         <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-          <li>• 整形したいJSON文字列を上のテキストエリアに貼り付けてください</li>
-          <li>• 構文エラーがある場合は自動的に検出してエラーを表示します</li>
-          <li>• インデントサイズを変更して見やすさを調整できます</li>
-          <li>• 「圧縮」ボタンで改行やスペースを削除した最小形式にできます</li>
+          <li>• {t('jsonFormatter.usage.step1')}</li>
+          <li>• {t('jsonFormatter.usage.step2')}</li>
+          <li>• {t('jsonFormatter.usage.step3')}</li>
+          <li>• {t('jsonFormatter.usage.step4')}</li>
         </ul>
       </div>
     </div>

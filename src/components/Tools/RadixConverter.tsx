@@ -2,26 +2,24 @@ import { useState } from 'react';
 import { Copy, Check } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
-import { HistoryItem } from '../../types';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { ToolProps } from '../../types';
 
-interface RadixConverterProps {
-  onHistoryAdd: (item: Omit<HistoryItem, 'timestamp'>) => void;
-}
-
-export function RadixConverter() {
+export function RadixConverter({ onHistoryAdd }: ToolProps) {
   const [inputValue, setInputValue] = useState('');
   const [fromBase, setFromBase] = useState(10);
   const [results, setResults] = useState<{ [key: number]: string }>({});
   const [error, setError] = useState('');
   const { copyToClipboard, isCopied } = useCopyToClipboard();
+  const { t } = useLanguage();
 
   const bases = [
-    { value: 2, label: '2進数 (Binary)' },
-    { value: 8, label: '8進数 (Octal)' },
-    { value: 10, label: '10進数 (Decimal)' },
-    { value: 16, label: '16進数 (Hexadecimal)' },
-    { value: 32, label: '32進数 (Base32)' },
-    { value: 36, label: '36進数 (Base36)' }
+    { value: 2, label: t('radixConverter.base.binary') },
+    { value: 8, label: t('radixConverter.base.octal') },
+    { value: 10, label: t('radixConverter.base.decimal') },
+    { value: 16, label: t('radixConverter.base.hexadecimal') },
+    { value: 32, label: t('radixConverter.base.base32') },
+    { value: 36, label: t('radixConverter.base.base36') }
   ];
 
   const validateInput = (value: string, base: number) => {
@@ -33,12 +31,12 @@ export function RadixConverter() {
 
   const handleConvert = () => {
     if (!inputValue.trim()) {
-      setError('値を入力してください');
+      setError(t('radixConverter.error.enterValue'));
       return;
     }
 
     if (!validateInput(inputValue, fromBase)) {
-      setError(`${fromBase}進数として無効な文字が含まれています`);
+      setError(t('radixConverter.error.invalidChars', { base: fromBase.toString() }));
       return;
     }
 
@@ -46,7 +44,7 @@ export function RadixConverter() {
       const decimalValue = parseInt(inputValue, fromBase);
       
       if (isNaN(decimalValue)) {
-        setError('変換できない値です');
+        setError(t('radixConverter.error.cannotConvert'));
         return;
       }
 
@@ -61,12 +59,13 @@ export function RadixConverter() {
       setResults(newResults);
       setError('');
 
-//       onHistoryAdd({
-//         toolId: 'radix-converter',
-//         output: `${fromBase}進数 "${inputValue}" を変換`
-//       });
+      onHistoryAdd?.({
+        toolId: 'radix-converter',
+        input: t('radixConverter.historyInput', { base: fromBase.toString(), value: inputValue }),
+        output: t('radixConverter.historyOutput')
+      });
     } catch (err) {
-      setError('変換中にエラーが発生しました');
+      setError(t('radixConverter.error.conversionError'));
     }
   };
 
@@ -88,20 +87,20 @@ export function RadixConverter() {
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            入力値
+            {t('radixConverter.input.label')}
           </label>
           <input
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value.replace(/\s/g, ''))}
-            placeholder="変換したい数値を入力"
+            placeholder={t('radixConverter.input.placeholder')}
             className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono"
           />
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            入力の進数
+            {t('radixConverter.inputBase.label')}
           </label>
           <select
             value={fromBase}
@@ -123,14 +122,14 @@ export function RadixConverter() {
         )}
 
         <Button onClick={handleConvert} className="w-full">
-          進数変換
+          {t('radixConverter.convert')}
         </Button>
       </div>
 
       {Object.keys(results).length > 0 && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            変換結果
+            {t('radixConverter.result')}
           </h3>
 
           <div className="space-y-3">
@@ -163,7 +162,7 @@ export function RadixConverter() {
                     size="sm"
                   >
                     {isCopied ? <Check className="w-4 h-4" /> : (
-                      <><Copy className="w-4 h-4 mr-1" /> コピー</>
+                      <><Copy className="w-4 h-4 mr-1" /> {t('radixConverter.copy')}</>
                     )}
                   </Button>
                 </div>
@@ -172,7 +171,7 @@ export function RadixConverter() {
           </div>
 
           <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-            <p><strong>使用可能な文字:</strong></p>
+            <p><strong>{t('radixConverter.availableChars')}</strong></p>
             <p><strong>2進数:</strong> 0, 1</p>
             <p><strong>8進数:</strong> 0-7</p>
             <p><strong>10進数:</strong> 0-9</p>

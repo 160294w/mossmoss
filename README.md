@@ -171,6 +171,12 @@ npm run build
 npm run preview
 ```
 
+### デプロイ
+
+wrangler login
+wrangler pages deploy dist
+
+
 ### 型チェック・Lint
 
 ```bash
@@ -297,6 +303,7 @@ const ref = useGSAP((ctx) => {
 - 📧 Email: [your-email@example.com]
 - 🐛 Issues: [GitHub Issues](https://github.com/your-username/utility-tools/issues)
 - 💬 Discussions: [GitHub Discussions](https://github.com/your-username/utility-tools/discussions)
+
 
 ---
 

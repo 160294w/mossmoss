@@ -2,11 +2,8 @@ import { useState } from 'react';
 import forge from 'node-forge';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
-import { HistoryItem } from '../../types';
-
-interface CertificateViewerProps {
-  onHistoryAdd: (item: Omit<HistoryItem, 'timestamp'>) => void;
-}
+import { useLanguage } from '../../contexts/LanguageContext';
+import { ToolProps } from '../../types';
 
 interface CertificateInfo {
   version: string;
@@ -32,11 +29,12 @@ interface CertificateInfo {
   };
 }
 
-export function CertificateViewer() {
+export function CertificateViewer({ onHistoryAdd }: ToolProps) {
   const [inputCert, setInputCert] = useState('');
   const [certInfo, setCertInfo] = useState<CertificateInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { copyToClipboard, isCopied } = useCopyToClipboard();
+  const { t } = useLanguage();
 
   // node-forgeを使って証明書を解析
   const parseCertificate = (certPem: string): CertificateInfo => {
@@ -47,13 +45,19 @@ export function CertificateViewer() {
       // 発行者情報を取得
       const issuer: { [key: string]: string } = {};
       cert.issuer.attributes.forEach(attr => {
-        issuer[attr.shortName || attr.name] = attr.value;
+        const key = attr.shortName || attr.name;
+        if (key) {
+          issuer[key] = Array.isArray(attr.value) ? attr.value.join(', ') : (attr.value || '');
+        }
       });
 
       // 主体者情報を取得
       const subject: { [key: string]: string } = {};
       cert.subject.attributes.forEach(attr => {
-        subject[attr.shortName || attr.name] = attr.value;
+        const key = attr.shortName || attr.name;
+        if (key) {
+          subject[key] = Array.isArray(attr.value) ? attr.value.join(', ') : (attr.value || '');
+        }
       });
 
       // 公開鍵情報を取得
@@ -78,7 +82,7 @@ export function CertificateViewer() {
       cert.extensions.forEach(ext => {
         const name = ext.name || `OID ${ext.id}`;
         if (ext.name === 'keyUsage') {
-          const keyUsage = ext as forge.pki.KeyUsageExtension;
+          const keyUsage = ext as any;
           const uses: string[] = [];
           if (keyUsage.digitalSignature) uses.push('Digital Signature');
           if (keyUsage.keyEncipherment) uses.push('Key Encipherment');
@@ -96,7 +100,7 @@ export function CertificateViewer() {
           });
           extensions[name] = names.join(', ');
         } else if (ext.name === 'basicConstraints') {
-          const basicConstraints = ext as forge.pki.BasicConstraintsExtension;
+          const basicConstraints = ext as any;
           extensions[name] = `CA:${basicConstraints.cA ? 'TRUE' : 'FALSE'}`;
           if (basicConstraints.pathLenConstraint !== undefined) {
             extensions[name] += `, pathlen:${basicConstraints.pathLenConstraint}`;
@@ -163,10 +167,11 @@ export function CertificateViewer() {
       const info = parseCertificate(value);
       setCertInfo(info);
       
-//       onHistoryAdd({
-//         toolId: 'certificate-viewer',
-//         output: '証明書情報を解析'
-//       });
+      onHistoryAdd?.({
+        toolId: 'certificate-viewer',
+        input: `Cert for ${info.subject.CN || info.subject.O}`,
+        output: t('certificateViewer.historyOutput')
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : '証明書の解析エラー');
       setCertInfo(null);
@@ -237,17 +242,17 @@ jBzFT9nJ2g==
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            X.509証明書入力
+            {t('certificateViewer.input.title')}
           </h3>
           <div className="flex space-x-2">
             <Button onClick={insertSampleCert} variant="outline" size="sm">
-              サンプル証明書
+              {t('certificateViewer.insertSample')}
             </Button>
             <Button onClick={handleCopyCert} variant="outline" size="sm">
-              {isCopied ? 'コピー済み!' : '証明書をコピー'}
+              {isCopied ? t('certificateViewer.copied') : t('certificateViewer.copyCert')}
             </Button>
             <Button onClick={clearAll} variant="outline" size="sm">
-              クリア
+              {t('certificateViewer.clear')}
             </Button>
           </div>
         </div>
@@ -255,7 +260,7 @@ jBzFT9nJ2g==
         <textarea
           value={inputCert}
           onChange={(e) => handleCertInput(e.target.value)}
-          placeholder="-----BEGIN CERTIFICATE-----で始まるPEM形式の証明書を入力してください..."
+          placeholder={t('certificateViewer.input.placeholder')}
           rows={8}
           className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono text-sm resize-y"
         />
@@ -263,7 +268,7 @@ jBzFT9nJ2g==
         {error && (
           <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
             <p className="text-red-600 dark:text-red-400 text-sm">
-              <strong>エラー:</strong> {error}
+              <strong>{t('certificateViewer.error.title')}</strong> {error}
             </p>
           </div>
         )}
@@ -275,33 +280,33 @@ jBzFT9nJ2g==
           {isExpired(certInfo.validTo) ? (
             <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
               <p className="text-red-600 dark:text-red-400 font-semibold">
-                ⚠️ この証明書は有効期限切れです
+                {t('certificateViewer.expired')}
               </p>
             </div>
           ) : getDaysUntilExpiry(certInfo.validTo) <= 30 ? (
             <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
               <p className="text-yellow-600 dark:text-yellow-400 font-semibold">
-                ⚠️ この証明書は{getDaysUntilExpiry(certInfo.validTo)}日後に有効期限切れになります
+                {t('certificateViewer.expiring', { days: getDaysUntilExpiry(certInfo.validTo) })}
               </p>
             </div>
           ) : (
             <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
               <p className="text-green-600 dark:text-green-400 font-semibold">
-                ✅ この証明書は有効です（{getDaysUntilExpiry(certInfo.validTo)}日間有効）
+                {t('certificateViewer.valid', { days: getDaysUntilExpiry(certInfo.validTo) })}
               </p>
             </div>
           )}
 
           {/* 基本情報 */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">基本情報</h3>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t('certificateViewer.basicInfo.title')}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">バージョン</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('certificateViewer.version')}</label>
                 <p className="text-sm text-gray-900 dark:text-white">{certInfo.version}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">シリアル番号</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('certificateViewer.serialNumber')}</label>
                 <p className="text-sm text-gray-900 dark:text-white font-mono">{certInfo.serialNumber}</p>
               </div>
             </div>
@@ -310,7 +315,7 @@ jBzFT9nJ2g==
           {/* 発行者・主体者情報 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">発行者 (Issuer)</h3>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t('certificateViewer.issuer.title')}</h3>
               <div className="space-y-2">
                 {Object.entries(certInfo.issuer).map(([key, value]) => (
                   <div key={key}>
@@ -322,7 +327,7 @@ jBzFT9nJ2g==
             </div>
 
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">主体者 (Subject)</h3>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t('certificateViewer.subject.title')}</h3>
               <div className="space-y-2">
                 {Object.entries(certInfo.subject).map(([key, value]) => (
                   <div key={key}>
@@ -336,14 +341,14 @@ jBzFT9nJ2g==
 
           {/* 有効期限 */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">有効期限</h3>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t('certificateViewer.validity.title')}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">有効期限開始</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('certificateViewer.validFrom')}</label>
                 <p className="text-sm text-gray-900 dark:text-white">{formatDate(certInfo.validFrom)}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">有効期限終了</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('certificateViewer.validTo')}</label>
                 <p className="text-sm text-gray-900 dark:text-white">{formatDate(certInfo.validTo)}</p>
               </div>
             </div>
@@ -351,21 +356,21 @@ jBzFT9nJ2g==
 
           {/* 公開鍵情報 */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">公開鍵</h3>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t('certificateViewer.publicKey.title')}</h3>
             <div className="space-y-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">アルゴリズム</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('certificateViewer.publicKey.algorithm')}</label>
                 <p className="text-sm text-gray-900 dark:text-white">{certInfo.publicKey.algorithm}</p>
               </div>
               {certInfo.publicKey.keySize && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">鍵サイズ</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('certificateViewer.publicKey.keySize')}</label>
                   <p className="text-sm text-gray-900 dark:text-white">{certInfo.publicKey.keySize}</p>
                 </div>
               )}
               {certInfo.publicKey.exponent && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">指数</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('certificateViewer.publicKey.exponent')}</label>
                   <p className="text-sm text-gray-900 dark:text-white font-mono">{certInfo.publicKey.exponent}</p>
                 </div>
               )}
@@ -374,14 +379,14 @@ jBzFT9nJ2g==
 
           {/* 署名情報 */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">署名</h3>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t('certificateViewer.signature.title')}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">署名アルゴリズム</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('certificateViewer.signature.algorithm')}</label>
                 <p className="text-sm text-gray-900 dark:text-white">{certInfo.signature.algorithm}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">ハッシュ関数</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{t('certificateViewer.signature.hash')}</label>
                 <p className="text-sm text-gray-900 dark:text-white">{certInfo.signature.hash}</p>
               </div>
             </div>
@@ -389,7 +394,7 @@ jBzFT9nJ2g==
 
           {/* 拡張情報 */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">拡張</h3>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t('certificateViewer.extensions.title')}</h3>
             <div className="space-y-2">
               {Object.entries(certInfo.extensions).map(([key, value]) => (
                 <div key={key}>
@@ -402,7 +407,7 @@ jBzFT9nJ2g==
 
           {/* フィンガープリント */}
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">フィンガープリント</h3>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">{t('certificateViewer.fingerprint.title')}</h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">SHA-1</label>
@@ -416,7 +421,7 @@ jBzFT9nJ2g==
           </div>
 
           <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-            <p><strong>注意:</strong> この証明書ビューアーは教育・デバッグ目的のものです。実際の証明書検証には専用ツールを使用してください。</p>
+            <p><strong>{t('certificateViewer.notice')}</strong></p>
           </div>
         </div>
       )}

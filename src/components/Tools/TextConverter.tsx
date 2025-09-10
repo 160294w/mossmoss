@@ -2,16 +2,18 @@ import { useState, useEffect } from 'react';
 import { RotateCcw } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { ToolProps } from '../../types';
 
 type ConversionType = 'numbers' | 'alphabet' | 'katakana' | 'all';
 
-export function TextConverter() {
+export function TextConverter({ onHistoryAdd }: ToolProps) {
   const [inputText, setInputText] = useState('');
   const [outputText, setOutputText] = useState('');
   const [conversionType, setConversionType] = useState<ConversionType>('all');
   const [isFullWidth, setIsFullWidth] = useState(true);
   const { copyToClipboard, isCopied } = useCopyToClipboard();
+  const { t } = useLanguage();
 
   // 全角→半角変換関数
   const toHalfWidth = (text: string, type: ConversionType): string => {
@@ -152,11 +154,11 @@ export function TextConverter() {
     setOutputText(converted);
 
     if (onHistoryAdd) {
-//       onHistoryAdd({
-//         toolId: 'text-converter',
-//         input: inputText,
-//         output: converted
-//       });
+      onHistoryAdd({
+        toolId: 'text-converter',
+        input: inputText,
+        output: converted
+      });
     }
   }, [inputText, conversionType, isFullWidth]);
 
@@ -175,7 +177,7 @@ export function TextConverter() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            変換方向
+            {t('textConverter.direction.label')}
           </label>
           <div className="flex gap-2">
             <Button
@@ -183,31 +185,31 @@ export function TextConverter() {
               onClick={() => setIsFullWidth(true)}
               size="sm"
             >
-              半角 → 全角
+              {t('textConverter.direction.halfToFull')}
             </Button>
             <Button
               variant={!isFullWidth ? 'primary' : 'outline'}
               onClick={() => setIsFullWidth(false)}
               size="sm"
             >
-              全角 → 半角
+              {t('textConverter.direction.fullToHalf')}
             </Button>
           </div>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            変換対象
+            {t('textConverter.target.label')}
           </label>
           <select
             value={conversionType}
             onChange={(e) => setConversionType(e.target.value as ConversionType)}
             className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
-            <option value="all">すべて</option>
-            <option value="numbers">数字のみ</option>
-            <option value="alphabet">英字のみ</option>
-            <option value="katakana">カタカナのみ</option>
+            <option value="all">{t('textConverter.target.all')}</option>
+            <option value="numbers">{t('textConverter.target.numbers')}</option>
+            <option value="alphabet">{t('textConverter.target.alphabet')}</option>
+            <option value="katakana">{t('textConverter.target.katakana')}</option>
           </select>
         </div>
       </div>
@@ -215,13 +217,13 @@ export function TextConverter() {
       {/* 入力エリア */}
       <div>
         <label htmlFor="input-text" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          変換前テキスト
+          {t('textConverter.input.label')}
         </label>
         <textarea
           id="input-text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          placeholder="変換したいテキストを入力..."
+          placeholder={t('textConverter.input.placeholder')}
           className="w-full h-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-y"
         />
       </div>
@@ -229,7 +231,7 @@ export function TextConverter() {
       {/* 出力エリア */}
       <div>
         <label htmlFor="output-text" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          変換後テキスト
+          {t('textConverter.output.label')}
         </label>
         <textarea
           id="output-text"
@@ -246,7 +248,7 @@ export function TextConverter() {
           disabled={!outputText}
           className="flex items-center gap-2"
         >
-          {isCopied ? '✓ コピー済み' : '📋 結果をコピー'}
+          {isCopied ? `✓ ${t('textConverter.copied')}` : `📋 ${t('textConverter.button.copyResult')}`}
         </Button>
         <Button 
           variant="outline" 
@@ -254,18 +256,18 @@ export function TextConverter() {
           disabled={!inputText}
         >
           <RotateCcw className="w-4 h-4 mr-1" />
-          リセット
+          {t('textConverter.button.reset')}
         </Button>
       </div>
 
       {/* サンプル */}
       <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">変換例</h3>
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('textConverter.examples.title')}</h3>
         <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-          <div>数字: １２３４５ ⇔ 12345</div>
-          <div>英字: ＡＢＣＤＥ ⇔ ABCDE</div>
-          <div>カタカナ: アイウエオ ⇔ ｱｲｳｴｵ</div>
-          <div>記号: （）「」！？ ⇔ ()「」!?</div>
+          <div>{t('textConverter.examples.numbers')}</div>
+          <div>{t('textConverter.examples.alphabet')}</div>
+          <div>{t('textConverter.examples.katakana')}</div>
+          <div>{t('textConverter.examples.symbols')}</div>
         </div>
       </div>
     </div>

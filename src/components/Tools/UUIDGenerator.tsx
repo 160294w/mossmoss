@@ -2,13 +2,11 @@ import { useState } from 'react';
 import { Copy, Check } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
-import { HistoryItem } from '../../types';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { ToolProps } from '../../types';
 
-interface UUIDGeneratorProps {
-  onHistoryAdd: (item: Omit<HistoryItem, 'timestamp'>) => void;
-}
-
-export function UUIDGenerator() {
+export function UUIDGenerator({ onHistoryAdd }: ToolProps) {
+  const { t } = useLanguage();
   const [version, setVersion] = useState<'v4' | 'v1'>('v4');
   const [quantity, setQuantity] = useState(1);
   const [uuidList, setUuidList] = useState<string[]>([]);
@@ -30,17 +28,17 @@ export function UUIDGenerator() {
     setUuidList(newUuids);
     
     if (newUuids.length === 1) {
-//       onHistoryAdd({
-//         toolId: 'uuid-generator',
-//         input: 'UUID生成',
-//         output: newUuids[0]
-//       });
+      onHistoryAdd?.({
+        toolId: 'uuid-generator',
+        input: `UUID ${version}`,
+        output: newUuids[0]
+      });
     } else {
-//       onHistoryAdd({
-//         toolId: 'uuid-generator',
-//         input: `${newUuids.length}個のUUID生成`,
-//         output: `${newUuids.length}個のUUID生成`
-//       });
+      onHistoryAdd?.({
+        toolId: 'uuid-generator',
+        input: `${quantity}${t('uuidGenerator.history.count')} UUID ${version}`,
+        output: `${newUuids.length}${t('uuidGenerator.history.generated')}`
+      });
     }
   };
 
@@ -58,7 +56,7 @@ export function UUIDGenerator() {
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            UUIDバージョン
+            {t('uuidGenerator.label.version')}
           </label>
           <div className="flex gap-4">
             <label className="flex items-center">
@@ -70,7 +68,7 @@ export function UUIDGenerator() {
                 className="mr-2"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">
-                UUID v4 (ランダム)
+                {t('uuidGenerator.option.v4')}
               </span>
             </label>
             <label className="flex items-center">
@@ -82,7 +80,7 @@ export function UUIDGenerator() {
                 className="mr-2"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">
-                UUID v1 (タイムスタンプベース)
+                {t('uuidGenerator.option.v1')}
               </span>
             </label>
           </div>
@@ -90,7 +88,7 @@ export function UUIDGenerator() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            生成数量
+            {t('uuidGenerator.label.quantity')}
           </label>
           <input
             type="number"
@@ -103,7 +101,7 @@ export function UUIDGenerator() {
         </div>
 
         <Button onClick={handleGenerate} className="w-full">
-          UUID生成
+          {t('uuidGenerator.button.generate')}
         </Button>
       </div>
 
@@ -111,7 +109,7 @@ export function UUIDGenerator() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              生成されたUUID
+              {t('uuidGenerator.label.generated')}
             </h3>
             {uuidList.length > 1 && (
               <Button
@@ -120,9 +118,9 @@ export function UUIDGenerator() {
                 size="sm"
               >
                 {isCopied ? (
-                  <><Check className="w-4 h-4 mr-1" /> コピー済み!</>
+                  <><Check className="w-4 h-4 mr-1" /> {t('uuidGenerator.button.copied')}</>
                 ) : (
-                  <><Copy className="w-4 h-4 mr-1" /> すべてコピー</>
+                  <><Copy className="w-4 h-4 mr-1" /> {t('uuidGenerator.button.copyAll')}</>
                 )}
               </Button>
             )}
@@ -145,7 +143,7 @@ export function UUIDGenerator() {
                   {isCopied ? (
                     <Check className="w-4 h-4" />
                   ) : (
-                    <><Copy className="w-4 h-4 mr-1" /> コピー</>
+                    <><Copy className="w-4 h-4 mr-1" /> {t('uuidGenerator.button.copy')}</>
                   )}
                 </Button>
               </div>
@@ -154,10 +152,10 @@ export function UUIDGenerator() {
 
           <div className="text-sm text-gray-600 dark:text-gray-400">
             <p>
-              <strong>UUID v4:</strong> 完全にランダムな値を使用
+              <strong>{t('uuidGenerator.info.v4Title')}:</strong> {t('uuidGenerator.info.v4Description')}
             </p>
             <p>
-              <strong>UUID v1:</strong> タイムスタンプベース（簡易実装）
+              <strong>{t('uuidGenerator.info.v1Title')}:</strong> {t('uuidGenerator.info.v1Description')}
             </p>
           </div>
         </div>

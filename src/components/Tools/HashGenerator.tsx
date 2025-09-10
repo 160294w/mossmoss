@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Type, File, Copy, RotateCcw, AlertTriangle, Check } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { ToolProps } from '../../types';
 
 type HashType = 'md5' | 'sha1' | 'sha256';
@@ -12,7 +13,8 @@ interface HashResult {
   sha256: string;
 }
 
-export function HashGenerator() {
+export function HashGenerator({ onHistoryAdd }: ToolProps) {
+  const { t } = useLanguage();
   const [inputText, setInputText] = useState('');
   const [hashResults, setHashResults] = useState<HashResult>({ md5: '', sha1: '', sha256: '' });
   const [isFile, setIsFile] = useState(false);
@@ -83,13 +85,13 @@ export function HashGenerator() {
       setHashResults(results);
 
       if (onHistoryAdd) {
-//         onHistoryAdd({
-//           toolId: 'hash-generator',
-//           input: typeof data === 'string' 
-//             ? (data.length > 50 ? data.slice(0, 50) + '...' : data)
-//             : fileName || `ファイル (${fileSize} bytes)`,
-//           output: 'ハッシュ生成完了'
-//         });
+        onHistoryAdd({
+          toolId: 'hash-generator',
+          input: typeof data === 'string' 
+            ? (data.length > 50 ? data.slice(0, 50) + '...' : data)
+            : fileName || `${t('hashGenerator.history.file')} (${fileSize} bytes)`,
+          output: t('hashGenerator.history.completed')
+        });
       }
     } catch (error) {
       console.error('Hash generation error:', error);
@@ -164,7 +166,7 @@ SHA-256: ${hashResults.sha256}`;
   // サンプル挿入
   const insertSample = () => {
     setIsFile(false);
-    setInputText('Hello, World! こんにちは世界 🌍');
+    setInputText(t('hashGenerator.sample.text'));
   };
 
   // ファイルサイズフォーマット
@@ -182,7 +184,7 @@ SHA-256: ${hashResults.sha256}`;
       {/* 入力モード選択 */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          入力方法
+          {t('hashGenerator.label.inputMethod')}
         </label>
         <div className="flex gap-2">
           <Button
@@ -192,7 +194,7 @@ SHA-256: ${hashResults.sha256}`;
             className="flex-1"
           >
             <Type className="w-4 h-4 mr-1" />
-            テキスト入力
+            {t('hashGenerator.button.textInput')}
           </Button>
           <Button
             variant={isFile ? 'primary' : 'outline'}
@@ -201,7 +203,7 @@ SHA-256: ${hashResults.sha256}`;
             className="flex-1"
           >
             <File className="w-4 h-4 mr-1" />
-            ファイル選択
+            {t('hashGenerator.button.fileSelect')}
           </Button>
         </div>
       </div>
@@ -211,22 +213,22 @@ SHA-256: ${hashResults.sha256}`;
         <div>
           <div className="flex items-center justify-between mb-2">
             <label htmlFor="text-input" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              ハッシュ化するテキスト
+              {t('hashGenerator.label.textToHash')}
             </label>
             <Button size="sm" variant="outline" onClick={insertSample}>
-              サンプル挿入
+              {t('hashGenerator.button.insertSample')}
             </Button>
           </div>
           <textarea
             id="text-input"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="ハッシュ化したいテキストを入力..."
+            placeholder={t('hashGenerator.placeholder.inputText')}
             className="w-full h-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-y"
           />
           {inputText && (
             <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              文字数: {inputText.length} | バイト数: {new TextEncoder().encode(inputText).length}
+              {t('hashGenerator.info.charCount')}: {inputText.length} | {t('hashGenerator.info.byteCount')}: {new TextEncoder().encode(inputText).length}
             </div>
           )}
         </div>
@@ -236,7 +238,7 @@ SHA-256: ${hashResults.sha256}`;
       {isFile && (
         <div>
           <label htmlFor="file-input" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            ハッシュ化するファイル
+            {t('hashGenerator.label.fileToHash')}
           </label>
           <input
             id="file-input"
@@ -247,8 +249,8 @@ SHA-256: ${hashResults.sha256}`;
           {fileName && (
             <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
               <div className="text-sm text-gray-700 dark:text-gray-300">
-                <div><strong>ファイル名:</strong> {fileName}</div>
-                <div><strong>ファイルサイズ:</strong> {formatFileSize(fileSize)}</div>
+                <div><strong>{t('hashGenerator.info.fileName')}:</strong> {fileName}</div>
+                <div><strong>{t('hashGenerator.info.fileSize')}:</strong> {formatFileSize(fileSize)}</div>
               </div>
             </div>
           )}
@@ -258,7 +260,7 @@ SHA-256: ${hashResults.sha256}`;
       {/* 読み込み中 */}
       {loading && (
         <div className="flex items-center justify-center py-8">
-          <div className="text-gray-500 dark:text-gray-400">ハッシュを生成中...</div>
+          <div className="text-gray-500 dark:text-gray-400">{t('hashGenerator.message.generating')}</div>
         </div>
       )}
 
@@ -266,10 +268,10 @@ SHA-256: ${hashResults.sha256}`;
       {!loading && hasResults && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">ハッシュ結果</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('hashGenerator.label.result')}</h3>
             <Button onClick={handleCopyAll} size="sm" variant="outline">
               <Copy className="w-4 h-4 mr-1" />
-              すべてコピー
+              {t('hashGenerator.button.copyAll')}
             </Button>
           </div>
 
@@ -279,7 +281,7 @@ SHA-256: ${hashResults.sha256}`;
               <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                 MD5
                 <span className="text-xs bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 px-2 py-1 rounded">
-                  非推奨
+                  {t('hashGenerator.status.deprecated')}
                 </span>
               </h4>
               <Button size="sm" variant="outline" onClick={() => handleCopyHash('md5')}>
@@ -290,7 +292,7 @@ SHA-256: ${hashResults.sha256}`;
               {hashResults.md5}
             </code>
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              <AlertTriangle className="w-3 h-3 inline mr-1" /> MD5は暗号学的に安全ではありません。セキュリティ用途には使用しないでください。
+              <AlertTriangle className="w-3 h-3 inline mr-1" /> {t('hashGenerator.warning.md5')}
             </p>
           </div>
 
@@ -300,7 +302,7 @@ SHA-256: ${hashResults.sha256}`;
               <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                 SHA-1
                 <span className="text-xs bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded">
-                  推奨されない
+                  {t('hashGenerator.status.notRecommended')}
                 </span>
               </h4>
               <Button size="sm" variant="outline" onClick={() => handleCopyHash('sha1')}>
@@ -311,7 +313,7 @@ SHA-256: ${hashResults.sha256}`;
               {hashResults.sha1}
             </code>
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              <AlertTriangle className="w-3 h-3 inline mr-1" /> SHA-1は脆弱性が発見されています。新しいシステムではSHA-256以上を使用してください。
+              <AlertTriangle className="w-3 h-3 inline mr-1" /> {t('hashGenerator.warning.sha1')}
             </p>
           </div>
 
@@ -321,7 +323,7 @@ SHA-256: ${hashResults.sha256}`;
               <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                 SHA-256
                 <span className="text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded">
-                  推奨
+                  {t('hashGenerator.status.recommended')}
                 </span>
               </h4>
               <Button size="sm" variant="outline" onClick={() => handleCopyHash('sha256')}>
@@ -332,7 +334,7 @@ SHA-256: ${hashResults.sha256}`;
               {hashResults.sha256}
             </code>
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              <Check className="w-3 h-3 inline mr-1" /> SHA-256は現在も安全とされており、セキュリティ用途に適しています。
+              <Check className="w-3 h-3 inline mr-1" /> {t('hashGenerator.info.sha256')}
             </p>
           </div>
         </div>
@@ -346,39 +348,39 @@ SHA-256: ${hashResults.sha256}`;
           disabled={!hasResults && !inputText && !fileName}
         >
           <RotateCcw className="w-4 h-4 mr-1" />
-          リセット
+          {t('hashGenerator.button.reset')}
         </Button>
       </div>
 
       {/* ハッシュアルゴリズムについて */}
       <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">ハッシュアルゴリズムについて</h3>
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t('hashGenerator.about.title')}</h3>
         <div className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
           <div>
-            <h4 className="font-medium text-gray-700 dark:text-gray-300">MD5 (Message Digest 5)</h4>
-            <p>128ビット（32桁）のハッシュ値。高速だが暗号学的に安全ではない。ファイルの整合性チェックのみに使用。</p>
+            <h4 className="font-medium text-gray-700 dark:text-gray-300">{t('hashGenerator.about.md5Title')}</h4>
+            <p>{t('hashGenerator.about.md5Description')}</p>
           </div>
           
           <div>
-            <h4 className="font-medium text-gray-700 dark:text-gray-300">SHA-1 (Secure Hash Algorithm 1)</h4>
-            <p>160ビット（40桁）のハッシュ値。2017年に実用的な攻撃が発見され、現在は推奨されない。</p>
+            <h4 className="font-medium text-gray-700 dark:text-gray-300">{t('hashGenerator.about.sha1Title')}</h4>
+            <p>{t('hashGenerator.about.sha1Description')}</p>
           </div>
           
           <div>
-            <h4 className="font-medium text-gray-700 dark:text-gray-300">SHA-256 (SHA-2)</h4>
-            <p>256ビット（64桁）のハッシュ値。現在も安全とされ、Bitcoin等で使用される。推奨される選択肢。</p>
+            <h4 className="font-medium text-gray-700 dark:text-gray-300">{t('hashGenerator.about.sha256Title')}</h4>
+            <p>{t('hashGenerator.about.sha256Description')}</p>
           </div>
         </div>
       </div>
 
       {/* 使用例 */}
       <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">使用例</h3>
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('hashGenerator.useCases.title')}</h3>
         <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-          <div>• <strong>ファイル整合性チェック:</strong> ダウンロードしたファイルが破損していないか確認</div>
-          <div>• <strong>パスワード保存:</strong> パスワードを直接保存せず、ハッシュ値で管理</div>
-          <div>• <strong>デジタル署名:</strong> 文書の改ざん検出</div>
-          <div>• <strong>ブロックチェーン:</strong> Bitcoin等の暗号通貨で使用</div>
+          <div>• <strong>{t('hashGenerator.useCases.fileIntegrity')}:</strong> {t('hashGenerator.useCases.fileIntegrityDesc')}</div>
+          <div>• <strong>{t('hashGenerator.useCases.passwordStorage')}:</strong> {t('hashGenerator.useCases.passwordStorageDesc')}</div>
+          <div>• <strong>{t('hashGenerator.useCases.digitalSignature')}:</strong> {t('hashGenerator.useCases.digitalSignatureDesc')}</div>
+          <div>• <strong>{t('hashGenerator.useCases.blockchain')}:</strong> {t('hashGenerator.useCases.blockchainDesc')}</div>
         </div>
       </div>
     </div>

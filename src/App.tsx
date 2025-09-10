@@ -17,7 +17,16 @@ import {
   Smile,
   RotateCcw,
   Search,
-  Shield
+  Shield,
+  Palette,
+  Clock,
+  Calendar,
+  Terminal,
+  Globe,
+  AlertTriangle,
+  ScrollText,
+  ArrowRightLeft,
+  Code
 } from 'lucide-react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
@@ -43,6 +52,14 @@ import { AsciiArtGenerator } from './components/Tools/AsciiArtGenerator';
 import { YamlJsonConverter } from './components/Tools/YamlJsonConverter';
 import { JqExplorer } from './components/Tools/JqExplorer';
 import { CertificateViewer } from './components/Tools/CertificateViewer';
+import { ColorPreview } from './components/Tools/ColorPreview';
+import { DateTimeFormatter } from './components/Tools/DateTimeFormatter';
+import { CronParser } from './components/Tools/CronParser';
+import { CurlConverter } from './components/Tools/CurlConverter';
+import { HtmlEscaper } from './components/Tools/HtmlEscaper';
+import { JsonLogViewer } from './components/Tools/JsonLogViewer';
+import { CaseConverter } from './components/Tools/CaseConverter';
+import { CurlToCode } from './components/Tools/CurlToCode';
 import { useGSAP } from './hooks/useGSAP';
 
 // ツール定義（基本情報）
@@ -165,6 +182,62 @@ const toolsConfig = [
     descriptionKey: 'tool.certificateViewer.description',
     icon: Shield,
     component: CertificateViewer
+  },
+  {
+    id: 'color-preview',
+    nameKey: 'tool.colorPreview.name',
+    descriptionKey: 'tool.colorPreview.description',
+    icon: Palette,
+    component: ColorPreview
+  },
+  {
+    id: 'datetime-formatter',
+    nameKey: 'tool.datetimeFormatter.name',
+    descriptionKey: 'tool.datetimeFormatter.description',
+    icon: Clock,
+    component: DateTimeFormatter
+  },
+  {
+    id: 'cron-parser',
+    nameKey: 'tool.cronParser.name',
+    descriptionKey: 'tool.cronParser.description',
+    icon: Calendar,
+    component: CronParser
+  },
+  {
+    id: 'curl-converter',
+    nameKey: 'tool.curlConverter.name',
+    descriptionKey: 'tool.curlConverter.description',
+    icon: Terminal,
+    component: CurlConverter
+  },
+  {
+    id: 'html-escaper',
+    nameKey: 'tool.htmlEscaper.name',
+    descriptionKey: 'tool.htmlEscaper.description',
+    icon: AlertTriangle,
+    component: HtmlEscaper
+  },
+  {
+    id: 'json-log-viewer',
+    nameKey: 'tool.jsonLogViewer.name',
+    descriptionKey: 'tool.jsonLogViewer.description',
+    icon: ScrollText,
+    component: JsonLogViewer
+  },
+  {
+    id: 'case-converter',
+    nameKey: 'tool.caseConverter.name',
+    descriptionKey: 'tool.caseConverter.description',
+    icon: ArrowRightLeft,
+    component: CaseConverter
+  },
+  {
+    id: 'curl-to-code',
+    nameKey: 'tool.curlToCode.name',
+    descriptionKey: 'tool.curlToCode.description',
+    icon: Code,
+    component: CurlToCode
   }
 ];
 

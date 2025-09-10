@@ -2,18 +2,20 @@ import { useState, useEffect } from 'react';
 import { AlertTriangle, RotateCcw, Trash2 } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { ToolProps } from '../../types';
 
 type ConversionMode = 'encode' | 'decode';
 type ConversionType = 'base64' | 'base64url' | 'base58';
 
-export function BaseConverter() {
+export function BaseConverter({ onHistoryAdd }: ToolProps) {
   const [inputText, setInputText] = useState('');
   const [outputText, setOutputText] = useState('');
   const [mode, setMode] = useState<ConversionMode>('encode');
   const [conversionType, setConversionType] = useState<ConversionType>('base64');
   const [error, setError] = useState('');
   const { copyToClipboard, isCopied } = useCopyToClipboard();
+  const { t } = useLanguage();
 
   // Base58アルファベット（Bitcoin/IPFS形式）
   const BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
@@ -53,7 +55,7 @@ export function BaseConverter() {
       const char = input[i];
       const value = BASE58_ALPHABET.indexOf(char);
       if (value === -1) {
-        throw new Error(`無効な Base58 文字: ${char}`);
+        throw new Error(`${t('baseConverter.error.title')}: ${char}`);
       }
 
       let carry = value;
@@ -139,7 +141,7 @@ export function BaseConverter() {
     } catch (err) {
       return { 
         output: '', 
-        error: err instanceof Error ? err.message : `${type.toUpperCase()}の${mode === 'encode' ? 'エンコード' : 'デコード'}に失敗しました` 
+        error: err instanceof Error ? err.message : `${type.toUpperCase()} ${mode === 'encode' ? t('baseConverter.mode.encode') : t('baseConverter.mode.decode')} ${t('yamlJsonConverter.error.failed')}` 
       };
     }
   };
@@ -150,12 +152,12 @@ export function BaseConverter() {
     setOutputText(result);
     setError(error);
 
-    if (result && !error) {
-//       onHistoryAdd({
-//         toolId: 'base-converter',
-//         input: inputText.slice(0, 50) + (inputText.length > 50 ? '...' : ''),
-//         output: `${conversionType.toUpperCase()} ${mode === 'encode' ? 'エンコード' : 'デコード'}完了`
-//       });
+    if (result && !error && onHistoryAdd) {
+      onHistoryAdd({
+        toolId: 'base-converter',
+        input: inputText.slice(0, 50) + (inputText.length > 50 ? '...' : ''),
+        output: mode === 'encode' ? t('baseConverter.historyOutput.encode', { format: conversionType.toUpperCase() }) : t('baseConverter.historyOutput.decode', { format: conversionType.toUpperCase() })
+      });
     }
   }, [inputText, conversionType, mode]);
 
@@ -190,7 +192,7 @@ export function BaseConverter() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            変換方向
+            {t('baseConverter.direction.label')}
           </label>
           <div className="flex gap-2">
             <Button
@@ -199,7 +201,7 @@ export function BaseConverter() {
               size="sm"
               className="flex-1"
             >
-              エンコード
+              {t('baseConverter.mode.encode')}
             </Button>
             <Button
               variant={mode === 'decode' ? 'primary' : 'outline'}
@@ -207,14 +209,14 @@ export function BaseConverter() {
               size="sm"
               className="flex-1"
             >
-              デコード
+              {t('baseConverter.mode.decode')}
             </Button>
           </div>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            変換形式
+            {t('baseConverter.format.label')}
           </label>
           <select
             value={conversionType}
@@ -229,7 +231,7 @@ export function BaseConverter() {
 
         <div className="flex items-end">
           <Button size="sm" variant="outline" onClick={insertSample} className="w-full">
-            サンプル挿入
+            {t('baseConverter.button.insertSample')}
           </Button>
         </div>
       </div>
@@ -237,18 +239,18 @@ export function BaseConverter() {
       {/* 入力エリア */}
       <div>
         <label htmlFor="input-text" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          {mode === 'encode' ? '元のテキスト' : `${conversionType.toUpperCase()}文字列`}
+          {mode === 'encode' ? t('baseConverter.input.originalText') : t('baseConverter.input.encodedText', { format: conversionType.toUpperCase() })}
         </label>
         <textarea
           id="input-text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          placeholder={mode === 'encode' ? 'エンコードしたいテキストを入力...' : `${conversionType.toUpperCase()}文字列を入力...`}
+          placeholder={mode === 'encode' ? t('baseConverter.input.placeholderEncode') : t('baseConverter.input.placeholderDecode', { format: conversionType.toUpperCase() })}
           className="w-full h-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-y font-mono text-sm"
         />
         {inputText && (
           <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            文字数: {inputText.length} | バイト数: {new TextEncoder().encode(inputText).length}
+            {t('baseConverter.stats.chars')}: {inputText.length} | {t('baseConverter.stats.bytes')}: {new TextEncoder().encode(inputText).length}
           </div>
         )}
       </div>
@@ -259,7 +261,7 @@ export function BaseConverter() {
           <div className="flex items-start">
             <AlertTriangle className="w-4 h-4 text-red-500 mr-2" />
             <div className="text-sm">
-              <div className="font-medium text-red-800 dark:text-red-200 mb-1">変換エラー</div>
+              <div className="font-medium text-red-800 dark:text-red-200 mb-1">{t('baseConverter.error.title')}</div>
               <div className="text-red-600 dark:text-red-300">{error}</div>
             </div>
           </div>
@@ -269,7 +271,7 @@ export function BaseConverter() {
       {/* 出力エリア */}
       <div>
         <label htmlFor="output-text" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          {mode === 'encode' ? `${conversionType.toUpperCase()}文字列` : 'デコードされたテキスト'}
+          {mode === 'encode' ? t('baseConverter.input.encodedText', { format: conversionType.toUpperCase() }) : t('baseConverter.input.decodedText')}
         </label>
         <textarea
           id="output-text"
@@ -279,7 +281,7 @@ export function BaseConverter() {
         />
         {outputText && (
           <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            文字数: {outputText.length} | バイト数: {new TextEncoder().encode(outputText).length}
+            {t('baseConverter.stats.chars')}: {outputText.length} | {t('baseConverter.stats.bytes')}: {new TextEncoder().encode(outputText).length}
           </div>
         )}
       </div>
@@ -291,7 +293,7 @@ export function BaseConverter() {
           disabled={!outputText}
           className="flex items-center gap-2"
         >
-          {isCopied ? '✓ コピー済み' : '📋 結果をコピー'}
+          {isCopied ? `✓ ${t('baseConverter.copied')}` : `📋 ${t('baseConverter.button.copyResult')}`}
         </Button>
         <Button 
           variant="outline" 
@@ -300,7 +302,7 @@ export function BaseConverter() {
           className="flex items-center gap-2"
         >
           <RotateCcw className="w-4 h-4 mr-1" />
-          入出力を入れ替え
+          {t('baseConverter.button.swap')}
         </Button>
         <Button 
           variant="outline" 
@@ -308,41 +310,41 @@ export function BaseConverter() {
           disabled={!inputText}
         >
           <Trash2 className="w-4 h-4 mr-1" />
-          リセット
+          {t('baseConverter.button.reset')}
         </Button>
       </div>
 
       {/* フォーマット説明 */}
       <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">エンコーディング形式について</h3>
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t('baseConverter.format.description.title')}</h3>
         <div className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
           <div>
-            <h4 className="font-medium text-gray-700 dark:text-gray-300">Base64</h4>
-            <p>標準的なBase64エンコーディング。A-Z, a-z, 0-9, +, / の64文字を使用。パディングに = を使用。</p>
-            <p className="text-xs mt-1">例: "Hello" → "SGVsbG8="</p>
+            <h4 className="font-medium text-gray-700 dark:text-gray-300">{t('baseConverter.format.base64.title')}</h4>
+            <p>{t('baseConverter.format.base64.description')}</p>
+            <p className="text-xs mt-1">{t('baseConverter.format.base64.example')}</p>
           </div>
           
           <div>
-            <h4 className="font-medium text-gray-700 dark:text-gray-300">Base64URL</h4>
-            <p>URL安全なBase64。+ を -、/ を _ に置換し、パディング = を省略。JWT等で使用。</p>
-            <p className="text-xs mt-1">例: "Hello" → "SGVsbG8"</p>
+            <h4 className="font-medium text-gray-700 dark:text-gray-300">{t('baseConverter.format.base64url.title')}</h4>
+            <p>{t('baseConverter.format.base64url.description')}</p>
+            <p className="text-xs mt-1">{t('baseConverter.format.base64url.example')}</p>
           </div>
           
           <div>
-            <h4 className="font-medium text-gray-700 dark:text-gray-300">Base58</h4>
-            <p>Bitcoin等で使用。紛らわしい文字（0, O, I, l）を除いた58文字を使用。</p>
-            <p className="text-xs mt-1">例: "Hello" → "9Ajdvzr"</p>
+            <h4 className="font-medium text-gray-700 dark:text-gray-300">{t('baseConverter.format.base58.title')}</h4>
+            <p>{t('baseConverter.format.base58.description')}</p>
+            <p className="text-xs mt-1">{t('baseConverter.format.base58.example')}</p>
           </div>
         </div>
       </div>
 
       {/* 使用例 */}
       <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">使用例</h3>
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('baseConverter.usage.title')}</h3>
         <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-          <div>• <strong>Base64:</strong> メール添付ファイル、データURL、Basic認証</div>
-          <div>• <strong>Base64URL:</strong> JWT、OAuth、URL安全な文字列</div>
-          <div>• <strong>Base58:</strong> Bitcoin、IPFS、短縮URL</div>
+          <div>• <strong>Base64:</strong> {t('baseConverter.usage.base64')}</div>
+          <div>• <strong>Base64URL:</strong> {t('baseConverter.usage.base64url')}</div>
+          <div>• <strong>Base58:</strong> {t('baseConverter.usage.base58')}</div>
         </div>
       </div>
     </div>

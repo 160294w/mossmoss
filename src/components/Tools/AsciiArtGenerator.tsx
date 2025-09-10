@@ -1,11 +1,8 @@
 import { useState } from 'react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
-import { HistoryItem } from '../../types';
-
-interface AsciiArtGeneratorProps {
-  onHistoryAdd: (item: Omit<HistoryItem, 'timestamp'>) => void;
-}
+import { useLanguage } from '../../contexts/LanguageContext';
+import { ToolProps } from '../../types';
 
 type AACharacter = {
   name: string;
@@ -14,11 +11,12 @@ type AACharacter = {
   description?: string;
 };
 
-export function AsciiArtGenerator() {
+export function AsciiArtGenerator({ onHistoryAdd }: ToolProps) {
   const [selectedArt, setSelectedArt] = useState('');
   const [selectedCharacter, setSelectedCharacter] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const { copyToClipboard, isCopied } = useCopyToClipboard();
+  const { t } = useLanguage();
 
   const asciiArts: AACharacter[] = [
     // モナー系
@@ -486,14 +484,14 @@ export function AsciiArtGenerator() {
   ];
 
   const categories = [
-    { value: 'all', label: 'すべて' },
-    { value: 'classic', label: 'クラシック' },
-    { value: 'yaruo', label: 'やる夫' },
-    { value: 'giko', label: 'ギコ' },
-    { value: 'oee', label: 'オエー' },
-    { value: 'maro', label: '麻呂' },
-    { value: 'other', label: 'その他キャラ' },
-    { value: 'emotion', label: '感情表現' }
+    { value: 'all', label: t('asciiArtGenerator.category.all') },
+    { value: 'classic', label: t('asciiArtGenerator.category.classic') },
+    { value: 'yaruo', label: t('asciiArtGenerator.category.yaruo') },
+    { value: 'giko', label: t('asciiArtGenerator.category.giko') },
+    { value: 'oee', label: t('asciiArtGenerator.category.oee') },
+    { value: 'maro', label: t('asciiArtGenerator.category.maro') },
+    { value: 'other', label: t('asciiArtGenerator.category.other') },
+    { value: 'emotion', label: t('asciiArtGenerator.category.emotion') }
   ];
 
   const getFilteredArts = () => {
@@ -513,20 +511,22 @@ export function AsciiArtGenerator() {
     setSelectedArt(selectedAA.art);
     setSelectedCharacter(selectedAA.name);
     
-//     onHistoryAdd({
-//       toolId: 'ascii-art-generator',
-//       output: `${selectedAA.name}を生成`
-//     });
+    onHistoryAdd?.({
+      toolId: 'ascii-art-generator',
+      input: t('asciiArtGenerator.historyInput', { category: selectedCategory }),
+      output: t('asciiArtGenerator.historyOutput.random', { name: selectedAA.name })
+    });
   };
 
   const selectSpecificArt = (character: AACharacter) => {
     setSelectedArt(character.art);
     setSelectedCharacter(character.name);
     
-//     onHistoryAdd({
-//       toolId: 'ascii-art-generator',
-//       output: `${character.name}を選択`
-//     });
+    onHistoryAdd?.({
+      toolId: 'ascii-art-generator',
+      input: t('asciiArtGenerator.historyInput', { category: character.category }),
+      output: t('asciiArtGenerator.historyOutput.select', { name: character.name })
+    });
   };
 
   const handleCopy = () => {
@@ -543,7 +543,7 @@ export function AsciiArtGenerator() {
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              カテゴリ選択
+              {t('asciiArtGenerator.category.label')}
             </label>
             <select
               value={selectedCategory}
@@ -560,11 +560,11 @@ export function AsciiArtGenerator() {
           
           <div className="flex gap-2 items-end">
             <Button onClick={generateRandomArt} className="whitespace-nowrap">
-              ランダム生成
+              {t('asciiArtGenerator.generate')}
             </Button>
             {selectedArt && (
               <Button onClick={handleCopy} variant="outline">
-                {isCopied ? 'コピー済み!' : 'コピー'}
+                {isCopied ? t('asciiArtGenerator.copied') : t('asciiArtGenerator.copy')}
               </Button>
             )}
           </div>
@@ -572,8 +572,8 @@ export function AsciiArtGenerator() {
 
         <div className="text-sm text-gray-600 dark:text-gray-400">
           <p>
-            <strong>対象キャラ:</strong> {filteredArts.length}個のAAが利用可能
-            {selectedCharacter && ` | 現在表示: ${selectedCharacter}`}
+            {t('asciiArtGenerator.availableCount', { count: filteredArts.length })}
+            {selectedCharacter && ` | ${t('asciiArtGenerator.currentDisplay', { character: selectedCharacter })}`}
           </p>
         </div>
       </div>
@@ -582,7 +582,7 @@ export function AsciiArtGenerator() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              生成されたAA
+              {t('asciiArtGenerator.result.title')}
             </h3>
           </div>
 
@@ -596,7 +596,7 @@ export function AsciiArtGenerator() {
 
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-          キャラクター一覧（{categories.find(c => c.value === selectedCategory)?.label}）
+          {t('asciiArtGenerator.list.title', { category: categories.find(c => c.value === selectedCategory)?.label })}
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -624,15 +624,15 @@ export function AsciiArtGenerator() {
       </div>
 
       <div className="text-sm text-gray-600 dark:text-gray-400">
-        <p><strong>使い方:</strong></p>
+        <p><strong>{t('asciiArtGenerator.usage.title')}</strong></p>
         <ul className="list-disc list-inside space-y-1 mt-1">
-          <li><strong>ランダム生成:</strong> 選択されたカテゴリからランダムにAAを表示</li>
-          <li><strong>個別選択:</strong> キャラクター一覧から好きなAAをクリック</li>
-          <li><strong>コピー:</strong> 生成されたAAをクリップボードにコピー</li>
-          <li><strong>カテゴリ:</strong> モナー、やる夫、ギコなど人気キャラで絞り込み</li>
+          <li>{t('asciiArtGenerator.usage.random')}</li>
+          <li>{t('asciiArtGenerator.usage.select')}</li>
+          <li>{t('asciiArtGenerator.usage.copy')}</li>
+          <li>{t('asciiArtGenerator.usage.category')}</li>
         </ul>
         <p className="mt-2">
-          <strong>注意:</strong> AAは2ちゃんねる文化の一部として教育・文化的な目的で提供しています。
+          <strong>{t('asciiArtGenerator.notice')}</strong>
         </p>
       </div>
     </div>

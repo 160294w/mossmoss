@@ -3,11 +3,8 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
-import { HistoryItem } from '../../types';
-
-interface CodeHighlighterProps {
-  onHistoryAdd: (item: Omit<HistoryItem, 'timestamp'>) => void;
-}
+import { useLanguage } from '../../contexts/LanguageContext';
+import { ToolProps } from '../../types';
 
 type SupportedLanguage = 'python' | 'ruby' | 'c' | 'shell' | 'go' | 'javascript' | 'typescript' | 'json' | 'html' | 'css' | 'auto';
 
@@ -24,7 +21,8 @@ const languageKeywords: Record<Exclude<SupportedLanguage, 'auto'>, string[]> = {
   css: ['{', '}', ':', ';', '.', '#', '@media', 'px', 'rem']
 };
 
-export function CodeHighlighter() {
+export function CodeHighlighter({ onHistoryAdd }: ToolProps) {
+  const { t } = useLanguage();
   const [inputCode, setInputCode] = useState('');
   const [detectedLanguage, setDetectedLanguage] = useState<SupportedLanguage>('auto');
   const [manualLanguage, setManualLanguage] = useState<SupportedLanguage>('auto');
@@ -81,11 +79,12 @@ export function CodeHighlighter() {
     const detected = detectLanguage(code);
     setDetectedLanguage(detected);
     
-    if (code.trim()) {
-//       onHistoryAdd({
-//         toolId: 'code-highlighter',
-//         output: `コードハイライト実行 (${detected})`
-//       });
+    if (code.trim() && onHistoryAdd) {
+      onHistoryAdd({
+        toolId: 'code-highlighter',
+        input: `Code snippet (${detected})`,
+        output: t('codeHighlighter.history.highlighted')
+      });
     }
   };
 
@@ -99,6 +98,7 @@ export function CodeHighlighter() {
   };
 
   const insertSample = (lang: SupportedLanguage) => {
+    if (lang === 'auto') return;
     const samples: Record<Exclude<SupportedLanguage, 'auto'>, string> = {
       python: `def fibonacci(n):
     if n <= 1:
@@ -333,7 +333,7 @@ const userService = new UserService('/api');`,
   };
 
   const supportedLanguages: { value: SupportedLanguage; label: string }[] = [
-    { value: 'auto', label: '自動検出' },
+    { value: 'auto', label: t('codeHighlighter.language.auto') },
     { value: 'python', label: 'Python' },
     { value: 'ruby', label: 'Ruby' },
     { value: 'c', label: 'C/C++' },
@@ -351,12 +351,12 @@ const userService = new UserService('/api');`,
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            コードを入力してください
+            {t('codeHighlighter.label.inputCode')}
           </label>
           <textarea
             value={inputCode}
             onChange={(e) => handleCodeChange(e.target.value)}
-            placeholder="ここにコードを貼り付けてください..."
+            placeholder={t('codeHighlighter.placeholder.pasteCode')}
             rows={10}
             className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono text-sm resize-y"
           />
@@ -365,7 +365,7 @@ const userService = new UserService('/api');`,
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              言語選択
+              {t('codeHighlighter.label.languageSelect')}
             </label>
             <select
               value={manualLanguage}
@@ -382,31 +382,31 @@ const userService = new UserService('/api');`,
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              テーマ
+              {t('codeHighlighter.label.theme')}
             </label>
             <select
               value={theme}
               onChange={(e) => setTheme(e.target.value as 'light' | 'dark')}
               className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
             >
-              <option value="dark">ダーク</option>
-              <option value="light">ライト</option>
+              <option value="dark">{t('codeHighlighter.theme.dark')}</option>
+              <option value="light">{t('codeHighlighter.theme.light')}</option>
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              検出された言語
+              {t('codeHighlighter.label.detectedLanguage')}
             </label>
             <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-md text-sm text-gray-700 dark:text-gray-300">
-              {detectedLanguage === 'auto' ? '未検出' : detectedLanguage}
+              {detectedLanguage === 'auto' ? t('codeHighlighter.status.notDetected') : detectedLanguage}
             </div>
           </div>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            サンプルコード
+            {t('codeHighlighter.label.sampleCode')}
           </label>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
             <Button onClick={() => insertSample('python')} variant="outline" size="sm">
@@ -447,10 +447,10 @@ const userService = new UserService('/api');`,
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              ハイライト結果 ({getDisplayLanguage()})
+              {t('codeHighlighter.label.result', { language: getDisplayLanguage() })}
             </h3>
             <Button onClick={handleCopy} variant="outline" size="sm">
-              {isCopied ? 'コピー済み!' : 'コピー'}
+              {isCopied ? t('codeHighlighter.button.copied') : t('codeHighlighter.button.copy')}
             </Button>
           </div>
 
@@ -470,9 +470,9 @@ const userService = new UserService('/api');`,
           </div>
 
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            <p><strong>対応言語:</strong> Python, Ruby, C/C++, Shell Script, Go, JavaScript, TypeScript, JSON, HTML, CSS</p>
-            <p><strong>自動検出:</strong> コード内のキーワードパターンを解析して言語を推定</p>
-            <p><strong>手動選択:</strong> 自動検出が不正確な場合は手動で言語を指定可能</p>
+            <p><strong>{t('codeHighlighter.info.supportedLanguages')}:</strong> Python, Ruby, C/C++, Shell Script, Go, JavaScript, TypeScript, JSON, HTML, CSS</p>
+            <p><strong>{t('codeHighlighter.info.autoDetection')}:</strong> {t('codeHighlighter.info.autoDetectionDesc')}</p>
+            <p><strong>{t('codeHighlighter.info.manualSelection')}:</strong> {t('codeHighlighter.info.manualSelectionDesc')}</p>
           </div>
         </div>
       )}

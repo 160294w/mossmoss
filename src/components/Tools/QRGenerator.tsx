@@ -3,11 +3,12 @@ import QRCode from 'qrcode';
 import { Download, Copy, AlertTriangle, Check } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { ToolProps } from '../../types';
 
 type ErrorCorrectionLevel = 'L' | 'M' | 'Q' | 'H';
 
-export function QRGenerator() {
+export function QRGenerator({ onHistoryAdd }: ToolProps) {
   const [inputText, setInputText] = useState('');
   const [qrDataURL, setQRDataURL] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,6 +22,7 @@ export function QRGenerator() {
   });
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { copyToClipboard, isCopied } = useCopyToClipboard();
+  const { t } = useLanguage();
 
   // QRコード生成
   const generateQR = async (text: string) => {
@@ -54,14 +56,14 @@ export function QRGenerator() {
       }
 
       if (onHistoryAdd) {
-//         onHistoryAdd({
-//           toolId: 'qr-generator',
-//           input: text.slice(0, 50) + (text.length > 50 ? '...' : ''),
-//           output: 'QRコード生成完了'
-//         });
+        onHistoryAdd({
+          toolId: 'qr-generator',
+          input: text.slice(0, 50) + (text.length > 50 ? '...' : ''),
+          output: t('qrGenerator.historyOutput')
+        });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'QRコードの生成に失敗しました');
+      setError(err instanceof Error ? err.message : t('qrGenerator.error.generateFailed'));
       setQRDataURL('');
     } finally {
       setLoading(false);
@@ -107,19 +109,19 @@ export function QRGenerator() {
 
   // プリセット
   const presets = [
-    { name: 'ウェブサイト', value: 'https://example.com' },
-    { name: 'メール', value: 'mailto:example@email.com' },
-    { name: '電話', value: 'tel:+81-90-1234-5678' },
-    { name: 'SMS', value: 'sms:+81-90-1234-5678' },
-    { name: 'WiFi', value: 'WIFI:T:WPA;S:MyNetwork;P:MyPassword;;' },
-    { name: 'vCard', value: 'BEGIN:VCARD\nVERSION:3.0\nFN:田中太郎\nTEL:+81-90-1234-5678\nEMAIL:tanaka@example.com\nEND:VCARD' },
+    { name: t('qrGenerator.preset.website'), value: 'https://example.com' },
+    { name: t('qrGenerator.preset.email'), value: 'mailto:example@email.com' },
+    { name: t('qrGenerator.preset.phone'), value: 'tel:+81-90-1234-5678' },
+    { name: t('qrGenerator.preset.sms'), value: 'sms:+81-90-1234-5678' },
+    { name: t('qrGenerator.preset.wifi'), value: 'WIFI:T:WPA;S:MyNetwork;P:MyPassword;;' },
+    { name: t('qrGenerator.preset.vcard'), value: 'BEGIN:VCARD\nVERSION:3.0\nFN:田中太郎\nTEL:+81-90-1234-5678\nEMAIL:tanaka@example.com\nEND:VCARD' },
   ];
 
   const errorLevels = [
-    { value: 'L', label: 'L (~7%)', description: '低' },
-    { value: 'M', label: 'M (~15%)', description: '中' },
-    { value: 'Q', label: 'Q (~25%)', description: '高' },
-    { value: 'H', label: 'H (~30%)', description: '最高' },
+    { value: 'L', label: t('qrGenerator.errorLevel.L') },
+    { value: 'M', label: t('qrGenerator.errorLevel.M') },
+    { value: 'Q', label: t('qrGenerator.errorLevel.Q') },
+    { value: 'H', label: t('qrGenerator.errorLevel.H') },
   ];
 
   return (
@@ -127,7 +129,7 @@ export function QRGenerator() {
       {/* プリセット */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          プリセット
+          {t('qrGenerator.presets')}
         </label>
         <div className="flex flex-wrap gap-2">
           {presets.map((preset) => (
@@ -146,18 +148,18 @@ export function QRGenerator() {
       {/* 入力エリア */}
       <div>
         <label htmlFor="input-text" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          QRコードにするテキスト
+          {t('qrGenerator.input.label')}
         </label>
         <textarea
           id="input-text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          placeholder="URL、テキスト、連絡先情報など..."
+          placeholder={t('qrGenerator.input.placeholder')}
           className="w-full h-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-y"
         />
         {inputText && (
           <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            文字数: {inputText.length}
+            {t('qrGenerator.characterCount').replace('{count}', inputText.length.toString())}
           </div>
         )}
       </div>
@@ -167,7 +169,7 @@ export function QRGenerator() {
         {/* サイズ設定 */}
         <div>
           <label htmlFor="size" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            サイズ: {options.size}px
+            {t('qrGenerator.size').replace('{size}', options.size.toString())}
           </label>
           <input
             id="size"
@@ -188,7 +190,7 @@ export function QRGenerator() {
         {/* マージン設定 */}
         <div>
           <label htmlFor="margin" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            マージン: {options.margin}
+            {t('qrGenerator.margin').replace('{margin}', options.margin.toString())}
           </label>
           <input
             id="margin"
@@ -208,7 +210,7 @@ export function QRGenerator() {
         {/* エラー訂正レベル */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            エラー訂正レベル
+            {t('qrGenerator.errorCorrection')}
           </label>
           <select
             value={options.errorCorrectionLevel}
@@ -217,7 +219,7 @@ export function QRGenerator() {
           >
             {errorLevels.map(level => (
               <option key={level.value} value={level.value}>
-                {level.label} - {level.description}
+                {level.label}
               </option>
             ))}
           </select>
@@ -227,7 +229,7 @@ export function QRGenerator() {
         <div className="space-y-3">
           <div>
             <label htmlFor="fg-color" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              前景色
+              {t('qrGenerator.foregroundColor')}
             </label>
             <div className="flex gap-2">
               <input
@@ -248,7 +250,7 @@ export function QRGenerator() {
 
           <div>
             <label htmlFor="bg-color" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              背景色
+              {t('qrGenerator.backgroundColor')}
             </label>
             <div className="flex gap-2">
               <input
@@ -271,11 +273,11 @@ export function QRGenerator() {
 
       {/* QRコード表示エリア */}
       <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">生成されたQRコード</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">{t('qrGenerator.result')}</h3>
         
         {loading && (
           <div className="flex items-center justify-center h-64">
-            <div className="text-gray-500 dark:text-gray-400">生成中...</div>
+            <div className="text-gray-500 dark:text-gray-400">{t('qrGenerator.loading')}</div>
           </div>
         )}
 
@@ -297,13 +299,13 @@ export function QRGenerator() {
             <div className="mt-4 flex justify-center gap-3">
               <Button onClick={downloadQR} className="flex items-center gap-2">
                 <Download className="w-4 h-4" />
-                ダウンロード
+                {t('qrGenerator.download')}
               </Button>
               <Button variant="outline" onClick={copyQR} className="flex items-center gap-2">
                 {isCopied ? (
-                  <><Check className="w-4 h-4" /> コピー済み</>
+                  <><Check className="w-4 h-4" /> {t('common.copied')}</>
                 ) : (
-                  <><Copy className="w-4 h-4" /> コピー</>
+                  <><Copy className="w-4 h-4" /> {t('qrGenerator.copyImage')}</>
                 )}
               </Button>
             </div>
@@ -312,7 +314,7 @@ export function QRGenerator() {
 
         {!loading && !error && !inputText && (
           <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
-            テキストを入力するとQRコードが表示されます
+            {t('qrGenerator.usage.step1')}
           </div>
         )}
       </div>
@@ -322,13 +324,12 @@ export function QRGenerator() {
 
       {/* 使用例 */}
       <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">QRコードの使用例</h3>
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('qrGenerator.usage.title')}</h3>
         <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-          <div>• <strong>URL:</strong> https://example.com</div>
-          <div>• <strong>メール:</strong> mailto:example@email.com</div>
-          <div>• <strong>電話:</strong> tel:+81-90-1234-5678</div>
-          <div>• <strong>Wi-Fi:</strong> WIFI:T:WPA;S:ネットワーク名;P:パスワード;;</div>
-          <div>• <strong>テキスト:</strong> 任意のテキストメッセージ</div>
+          <div>• {t('qrGenerator.usage.step1')}</div>
+          <div>• {t('qrGenerator.usage.step2')}</div>
+          <div>• {t('qrGenerator.usage.step3')}</div>
+          <div>• {t('qrGenerator.usage.step4')}</div>
         </div>
       </div>
     </div>

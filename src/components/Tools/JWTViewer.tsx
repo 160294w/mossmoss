@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { AlertTriangle, Copy, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { ToolProps } from '../../types';
 
 interface JWTPayload {
@@ -16,11 +17,12 @@ interface DecodedJWT {
   error?: string;
 }
 
-export function JWTViewer() {
+export function JWTViewer({ onHistoryAdd }: ToolProps) {
   const [inputJWT, setInputJWT] = useState('');
   const [decodedJWT, setDecodedJWT] = useState<DecodedJWT | null>(null);
   const [error, setError] = useState('');
   const { copyToClipboard } = useCopyToClipboard();
+  const { t } = useLanguage();
 
   // Base64URL デコード関数
   const base64UrlDecode = (str: string): string => {
@@ -33,7 +35,7 @@ export function JWTViewer() {
     try {
       return atob(base64);
     } catch {
-      throw new Error('Invalid base64url encoding');
+      throw new Error(t('jwtViewer.error.invalidBase64'));
     }
   };
 
@@ -42,7 +44,7 @@ export function JWTViewer() {
     try {
       const parts = token.split('.');
       if (parts.length !== 3) {
-        throw new Error('JWTは3つの部分（ヘッダー、ペイロード、シグネチャ）から構成される必要があります');
+        throw new Error(t('jwtViewer.error.invalidFormat'));
       }
 
       const [headerPart, payloadPart, signaturePart] = parts;
@@ -67,7 +69,7 @@ export function JWTViewer() {
         payload: {},
         signature: '',
         isValid: false,
-        error: err instanceof Error ? err.message : 'JWTの解析に失敗しました'
+        error: err instanceof Error ? err.message : t('jwtViewer.error.decodeFailed')
       };
     }
   };
@@ -84,12 +86,12 @@ export function JWTViewer() {
     setDecodedJWT(decoded);
     setError(decoded.error || '');
 
-    if (decoded.isValid && onHistoryAdd) {
-//       onHistoryAdd({
-//         toolId: 'jwt-viewer',
-//         input: inputJWT.slice(0, 50) + (inputJWT.length > 50 ? '...' : ''),
-//         output: 'JWT解析完了'
-//       });
+    if (decoded.isValid) {
+      onHistoryAdd?.({
+        toolId: 'jwt-viewer',
+        input: inputJWT.slice(0, 50) + (inputJWT.length > 50 ? '...' : ''),
+        output: t('jwtViewer.historyOutput')
+      });
     }
   }, [inputJWT]);
 
@@ -108,7 +110,7 @@ export function JWTViewer() {
   // 期限チェック
   const getExpirationStatus = (exp?: number): { status: string; className: string; message: string } => {
     if (!exp) {
-      return { status: 'unknown', className: 'text-gray-500', message: '期限情報なし' };
+      return { status: 'unknown', className: 'text-gray-500', message: t('jwtViewer.status.noExpiration') };
     }
 
     const now = Math.floor(Date.now() / 1000);
@@ -118,19 +120,19 @@ export function JWTViewer() {
       return { 
         status: 'expired', 
         className: 'text-red-500', 
-        message: `期限切れ（${Math.abs(timeLeft)}秒前）` 
+        message: t('jwtViewer.status.expired').replace('{seconds}', Math.abs(timeLeft).toString()) 
       };
     } else if (timeLeft < 3600) {
       return { 
         status: 'expiring', 
         className: 'text-orange-500', 
-        message: `まもなく期限切れ（${timeLeft}秒後）` 
+        message: t('jwtViewer.status.expiring').replace('{seconds}', timeLeft.toString()) 
       };
     } else {
       return { 
         status: 'valid', 
         className: 'text-green-500', 
-        message: `有効（${Math.floor(timeLeft / 3600)}時間後に期限切れ）` 
+        message: t('jwtViewer.status.valid').replace('{hours}', Math.floor(timeLeft / 3600).toString()) 
       };
     }
   };
@@ -192,16 +194,16 @@ export function JWTViewer() {
     <div className="space-y-6">
       {/* サンプル挿入 */}
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-white">JWT Viewer</h3>
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('jwtViewer.title')}</h3>
         <Button size="sm" variant="outline" onClick={insertSample}>
-          サンプル挿入
+          {t('jwtViewer.insertSample')}
         </Button>
       </div>
 
       {/* 入力エリア */}
       <div>
         <label htmlFor="jwt-input" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          JWT文字列を入力
+          {t('jwtViewer.input.label')}
         </label>
         <textarea
           id="jwt-input"
@@ -218,7 +220,7 @@ export function JWTViewer() {
           <div className="flex items-start">
             <AlertTriangle className="w-4 h-4 text-red-500 mr-2" />
             <div className="text-sm">
-              <div className="font-medium text-red-800 dark:text-red-200 mb-1">JWTエラー</div>
+              <div className="font-medium text-red-800 dark:text-red-200 mb-1">{t('jwtViewer.error.title')}</div>
               <div className="text-red-600 dark:text-red-300">{error}</div>
             </div>
           </div>
@@ -247,10 +249,10 @@ export function JWTViewer() {
           {/* ヘッダー */}
           <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">ヘッダー (Header)</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('jwtViewer.header.title')}</h3>
               <Button size="sm" variant="outline" onClick={handleCopyHeader}>
                 <Copy className="w-4 h-4 mr-1" />
-                コピー
+                {t('common.copy')}
               </Button>
             </div>
             <pre className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md p-3 text-sm font-mono overflow-x-auto text-gray-900 dark:text-white">
@@ -261,13 +263,13 @@ export function JWTViewer() {
             <div className="mt-3 text-sm text-gray-600 dark:text-gray-400">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {decodedJWT.header.alg && (
-                  <div><strong>アルゴリズム:</strong> {decodedJWT.header.alg}</div>
+                  <div><strong>{t('jwtViewer.algorithm')}:</strong> {decodedJWT.header.alg}</div>
                 )}
                 {decodedJWT.header.typ && (
-                  <div><strong>タイプ:</strong> {decodedJWT.header.typ}</div>
+                  <div><strong>{t('jwtViewer.type')}:</strong> {decodedJWT.header.typ}</div>
                 )}
                 {decodedJWT.header.kid && (
-                  <div><strong>キーID:</strong> {decodedJWT.header.kid}</div>
+                  <div><strong>{t('jwtViewer.keyId')}:</strong> {decodedJWT.header.kid}</div>
                 )}
               </div>
             </div>
@@ -276,10 +278,10 @@ export function JWTViewer() {
           {/* ペイロード */}
           <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">ペイロード (Payload)</h3>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('jwtViewer.payload.title')}</h3>
               <Button size="sm" variant="outline" onClick={handleCopyPayload}>
                 <Copy className="w-4 h-4 mr-1" />
-                コピー
+                {t('common.copy')}
               </Button>
             </div>
             <pre className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md p-3 text-sm font-mono overflow-x-auto text-gray-900 dark:text-white">
@@ -288,28 +290,28 @@ export function JWTViewer() {
 
             {/* 標準クレーム情報 */}
             <div className="mt-3 text-sm text-gray-600 dark:text-gray-400">
-              <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">標準クレーム</h4>
+              <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">{t('jwtViewer.claims.title')}</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {decodedJWT.payload.iss && (
-                  <div><strong>発行者 (iss):</strong> {decodedJWT.payload.iss}</div>
+                  <div><strong>{t('jwtViewer.claims.issuer')}:</strong> {decodedJWT.payload.iss}</div>
                 )}
                 {decodedJWT.payload.sub && (
-                  <div><strong>主体 (sub):</strong> {decodedJWT.payload.sub}</div>
+                  <div><strong>{t('jwtViewer.claims.subject')}:</strong> {decodedJWT.payload.sub}</div>
                 )}
                 {decodedJWT.payload.aud && (
-                  <div><strong>対象者 (aud):</strong> {Array.isArray(decodedJWT.payload.aud) ? decodedJWT.payload.aud.join(', ') : decodedJWT.payload.aud}</div>
+                  <div><strong>{t('jwtViewer.claims.audience')}:</strong> {Array.isArray(decodedJWT.payload.aud) ? decodedJWT.payload.aud.join(', ') : decodedJWT.payload.aud}</div>
                 )}
                 {decodedJWT.payload.exp && (
-                  <div><strong>期限 (exp):</strong> {formatTimestamp(decodedJWT.payload.exp)}</div>
+                  <div><strong>{t('jwtViewer.claims.expiration')}:</strong> {formatTimestamp(decodedJWT.payload.exp)}</div>
                 )}
                 {decodedJWT.payload.nbf && (
-                  <div><strong>有効開始 (nbf):</strong> {formatTimestamp(decodedJWT.payload.nbf)}</div>
+                  <div><strong>{t('jwtViewer.claims.notBefore')}:</strong> {formatTimestamp(decodedJWT.payload.nbf)}</div>
                 )}
                 {decodedJWT.payload.iat && (
-                  <div><strong>発行時刻 (iat):</strong> {formatTimestamp(decodedJWT.payload.iat)}</div>
+                  <div><strong>{t('jwtViewer.claims.issuedAt')}:</strong> {formatTimestamp(decodedJWT.payload.iat)}</div>
                 )}
                 {decodedJWT.payload.jti && (
-                  <div><strong>JWT ID (jti):</strong> {decodedJWT.payload.jti}</div>
+                  <div><strong>{t('jwtViewer.claims.jwtId')}:</strong> {decodedJWT.payload.jti}</div>
                 )}
               </div>
             </div>
@@ -317,15 +319,14 @@ export function JWTViewer() {
 
           {/* シグネチャ */}
           <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">シグネチャ (Signature)</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">{t('jwtViewer.signature.title')}</h3>
             <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md p-3">
               <code className="text-sm font-mono text-gray-900 dark:text-white break-all">
                 {decodedJWT.signature}
               </code>
             </div>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              <AlertTriangle className="w-4 h-4 inline mr-1" /> このツールはJWTの構造を表示するだけで、シグネチャの検証は行いません。
-              セキュリティが重要な場合は、適切な検証ライブラリを使用してください。
+              <AlertTriangle className="w-4 h-4 inline mr-1" /> {t('jwtViewer.signature.warning')}
             </p>
           </div>
         </div>
@@ -333,12 +334,12 @@ export function JWTViewer() {
 
       {/* 使用方法 */}
       <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">使用方法</h3>
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('jwtViewer.usage.title')}</h3>
         <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-          <li>• JWT（JSON Web Token）文字列を上のテキストエリアに貼り付けてください</li>
-          <li>• ヘッダーとペイロードが自動的にデコードされ、見やすい形式で表示されます</li>
-          <li>• 期限（exp）がある場合、有効性がチェックされます</li>
-          <li>• このツールは表示専用で、シグネチャの検証は行いません</li>
+          <li>• {t('jwtViewer.usage.step1')}</li>
+          <li>• {t('jwtViewer.usage.step2')}</li>
+          <li>• {t('jwtViewer.usage.step3')}</li>
+          <li>• {t('jwtViewer.usage.step4')}</li>
         </ul>
       </div>
     </div>

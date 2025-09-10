@@ -1,30 +1,17 @@
 import { useState, useCallback } from 'react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
-import { HistoryItem } from '../../types';
+import { useLanguage } from '../../contexts/LanguageContext';
+import { ToolProps } from '../../types';
 
-interface JqExplorerProps {
-  onHistoryAdd: (item: Omit<HistoryItem, 'timestamp'>) => void;
-}
-
-interface JsonPathNode {
-  key: string;
-  value: any;
-  path: string[];
-  jqPath: string;
-  isArray: boolean;
-  isObject: boolean;
-  isPrimitive: boolean;
-}
-
-export function JqExplorer() {
+export function JqExplorer({ onHistoryAdd }: ToolProps) {
   const [inputJson, setInputJson] = useState('');
   const [parsedData, setParsedData] = useState<any>(null);
-  const [selectedPath, setSelectedPath] = useState('');
   const [selectedJqQuery, setSelectedJqQuery] = useState('');
   const [queryResult, setQueryResult] = useState('');
   const [error, setError] = useState<string | null>(null);
   const { copyToClipboard, isCopied } = useCopyToClipboard();
+  const { t } = useLanguage();
 
   const generateJqQuery = (path: string[]): string => {
     if (path.length === 0) return '.';
@@ -211,7 +198,6 @@ export function JqExplorer() {
 
   const handlePathClick = (path: string[]) => {
     const jqQuery = generateJqQuery(path);
-    setSelectedPath(path.join('.'));
     setSelectedJqQuery(jqQuery);
     
     if (parsedData) {
@@ -219,10 +205,11 @@ export function JqExplorer() {
         const result = executeJqQuery(jqQuery, parsedData);
         setQueryResult(result);
         
-//         onHistoryAdd({
-//           toolId: 'jq-explorer',
-//           output: `jqクエリ実行: ${jqQuery}`
-//         });
+        onHistoryAdd?.({
+          toolId: 'jq-explorer',
+          input: t('jqExplorer.historyInput', { path: path.join('.') }),
+          output: t('jqExplorer.historyOutput', { query: jqQuery })
+        });
       } catch (err) {
         setQueryResult(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
       }
@@ -273,7 +260,6 @@ export function JqExplorer() {
   const clearAll = () => {
     setInputJson('');
     setParsedData(null);
-    setSelectedPath('');
     setSelectedJqQuery('');
     setQueryResult('');
     setError(null);
@@ -284,14 +270,14 @@ export function JqExplorer() {
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            JSON入力
+            {t('jqExplorer.jsonInput.title')}
           </h3>
           <div className="flex space-x-2">
             <Button onClick={insertSampleJson} variant="outline" size="sm">
-              サンプルJSON
+              {t('jqExplorer.insertSample')}
             </Button>
             <Button onClick={clearAll} variant="outline" size="sm">
-              クリア
+              {t('jqExplorer.clear')}
             </Button>
           </div>
         </div>
@@ -299,7 +285,7 @@ export function JqExplorer() {
         <textarea
           value={inputJson}
           onChange={(e) => handleJsonInput(e.target.value)}
-          placeholder="JSONデータを入力してください..."
+          placeholder={t('jqExplorer.input.placeholder')}
           rows={8}
           className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono text-sm resize-y"
         />
@@ -307,7 +293,7 @@ export function JqExplorer() {
         {error && (
           <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
             <p className="text-red-600 dark:text-red-400 text-sm">
-              <strong>エラー:</strong> {error}
+              <strong>{t('jqExplorer.error.title')}</strong> {error}
             </p>
           </div>
         )}
@@ -317,13 +303,13 @@ export function JqExplorer() {
         <div className="space-y-4">
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              JSONツリー（クリックしてjqクエリを生成）
+              {t('jqExplorer.tree.title')}
             </h3>
             <div className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 font-mono text-sm overflow-auto max-h-96">
               {renderJsonNode(parsedData)}
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-              💡 任意のフィールドをクリックすると、対応するjqクエリが自動生成されます
+              {t('jqExplorer.tree.instruction')}
             </p>
           </div>
 
@@ -331,10 +317,10 @@ export function JqExplorer() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  生成されたjqクエリ
+                  {t('jqExplorer.query.title')}
                 </h3>
                 <Button onClick={handleCopyQuery} variant="outline" size="sm">
-                  {isCopied ? 'コピー済み!' : 'クエリをコピー'}
+                  {isCopied ? t('jqExplorer.query.copied') : t('jqExplorer.query.copy')}
                 </Button>
               </div>
 
@@ -346,7 +332,7 @@ export function JqExplorer() {
 
               <div>
                 <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-2">
-                  実行結果
+                  {t('jqExplorer.result.title')}
                 </h4>
                 <pre className="p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-mono text-sm overflow-auto max-h-64">
                   {queryResult}
@@ -356,12 +342,12 @@ export function JqExplorer() {
           )}
 
           <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-            <p><strong>使い方:</strong></p>
+            <p><strong>{t('jqExplorer.usage.title')}</strong></p>
             <ul className="list-disc list-inside space-y-1">
-              <li>JSONを入力すると、構造化されたツリー表示になります</li>
-              <li>任意のフィールドをクリックすると、そのフィールドを抽出するjqクエリが生成されます</li>
-              <li>生成されたクエリをコピーして、実際のjqコマンドで使用できます</li>
-              <li>クエリの実行結果もリアルタイムで確認できます</li>
+              <li>{t('jqExplorer.usage.step1')}</li>
+              <li>{t('jqExplorer.usage.step2')}</li>
+              <li>{t('jqExplorer.usage.step3')}</li>
+              <li>{t('jqExplorer.usage.step4')}</li>
             </ul>
           </div>
         </div>
