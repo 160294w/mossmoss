@@ -67,7 +67,7 @@ export function MarkdownConverter({ onHistoryAdd }: ToolProps) {
         onHistoryAdd?.({
           toolId: 'markdown-converter',
           input: input.slice(0, 50) + (input.length > 50 ? '...' : ''),
-          output: t('markdownConverter.history.mdToHtml')
+          output: t('markdownConverter.historyOutput.mdToHtml')
         });
       } else {
         // HTML to Markdown
@@ -77,13 +77,13 @@ export function MarkdownConverter({ onHistoryAdd }: ToolProps) {
         onHistoryAdd?.({
           toolId: 'markdown-converter',
           input: input.slice(0, 50) + (input.length > 50 ? '...' : ''),
-          output: t('markdownConverter.history.htmlToMd')
+          output: t('markdownConverter.historyOutput.htmlToMd')
         });
       }
       
       setError('');
     } catch (err) {
-      setError(t('markdownConverter.error.conversionError'));
+      setError(t('markdownConverter.error.conversionFailed'));
       console.error('Conversion error:', err);
     }
   };
@@ -92,9 +92,43 @@ export function MarkdownConverter({ onHistoryAdd }: ToolProps) {
     copyToClipboard(output);
   };
 
-  const sampleMarkdown = t('markdownConverter.sample.markdown');
+  const sampleMarkdown = `# サンプルMarkdown
 
-  const sampleHtml = t('markdownConverter.sample.html');
+これは**太字**、これは*斜体*です。
+
+## リスト
+- 項目1
+- 項目2
+- 項目3
+
+## リンクと画像
+[リンク](https://example.com)
+
+![代替テキスト](https://via.placeholder.com/200x100)
+
+## コードブロック
+\`\`\`javascript
+function hello() {
+  console.log('Hello, World!');
+}
+\`\`\``;
+
+  const sampleHtml = `<h1>サンプルHTML</h1>
+<p>これは<strong>太字</strong>、これは<em>斜体</em>です。</p>
+<h2>リスト</h2>
+<ul>
+<li>項目1</li>
+<li>項目2</li>
+<li>項目3</li>
+</ul>
+<h2>リンクと画像</h2>
+<p><a href="https://example.com">リンク</a></p>
+<p><img src="https://via.placeholder.com/200x100" alt="代替テキスト" /></p>
+<h2>コードブロック</h2>
+<pre><code class="language-javascript">function hello() {
+  console.log('Hello, World!');
+}
+</code></pre>`;
 
   const insertSample = () => {
     setInput(mode === 'md-to-html' ? sampleMarkdown : sampleHtml);
@@ -105,7 +139,7 @@ export function MarkdownConverter({ onHistoryAdd }: ToolProps) {
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {t('markdownConverter.label.conversionMode')}
+            {t('markdownConverter.input.mode')}
           </label>
           <div className="flex gap-4">
             <label className="flex items-center">
@@ -117,7 +151,7 @@ export function MarkdownConverter({ onHistoryAdd }: ToolProps) {
                 className="mr-2"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">
-                Markdown → HTML
+                {t('markdownConverter.mode.mdToHtml')}
               </span>
             </label>
             <label className="flex items-center">
@@ -129,7 +163,7 @@ export function MarkdownConverter({ onHistoryAdd }: ToolProps) {
                 className="mr-2"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">
-                HTML → Markdown
+                {t('markdownConverter.mode.htmlToMd')}
               </span>
             </label>
           </div>
@@ -138,16 +172,16 @@ export function MarkdownConverter({ onHistoryAdd }: ToolProps) {
         <div>
           <div className="flex items-center justify-between mb-2">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              {mode === 'md-to-html' ? t('markdownConverter.label.markdownInput') : t('markdownConverter.label.htmlInput')}
+              {mode === 'md-to-html' ? t('markdownConverter.input.markdownLabel') : t('markdownConverter.input.htmlLabel')}
             </label>
             <Button onClick={insertSample} variant="outline" size="sm">
-              {t('markdownConverter.button.insertSample')}
+              {t('markdownConverter.sample.insert')}
             </Button>
           </div>
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={mode === 'md-to-html' ? t('markdownConverter.placeholder.markdownInput') : t('markdownConverter.placeholder.htmlInput')}
+            placeholder={mode === 'md-to-html' ? t('markdownConverter.input.markdownPlaceholder') : t('markdownConverter.input.htmlPlaceholder')}
             rows={10}
             className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono text-sm resize-y"
           />
@@ -168,7 +202,7 @@ export function MarkdownConverter({ onHistoryAdd }: ToolProps) {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {mode === 'md-to-html' ? t('markdownConverter.label.htmlOutput') : t('markdownConverter.label.markdownOutput')}
+              {mode === 'md-to-html' ? t('markdownConverter.output.htmlLabel') : t('markdownConverter.output.markdownLabel')}
             </h3>
             <Button onClick={handleCopy} variant="outline" size="sm">
               {isCopied ? t('markdownConverter.button.copied') : t('markdownConverter.button.copy')}
@@ -178,7 +212,7 @@ export function MarkdownConverter({ onHistoryAdd }: ToolProps) {
           <div className="space-y-4">
             <div>
               <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('markdownConverter.label.conversionResult')}
+                {t('markdownConverter.result.sourceCode')}
               </div>
               <textarea
                 value={output}
@@ -191,7 +225,7 @@ export function MarkdownConverter({ onHistoryAdd }: ToolProps) {
             {mode === 'md-to-html' && (
               <div>
                 <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('markdownConverter.label.preview')}
+                  {t('markdownConverter.result.htmlPreview')}
                 </div>
                 <div
                   className="p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 prose dark:prose-invert max-w-none"
@@ -202,10 +236,10 @@ export function MarkdownConverter({ onHistoryAdd }: ToolProps) {
           </div>
 
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            <p><strong>{t('markdownConverter.info.noteTitle')}:</strong></p>
+            <p><strong>{t('markdownConverter.warning.note')}</strong></p>
             <ul className="list-disc list-inside space-y-1">
-              <li>{t('markdownConverter.info.htmlToMdLimitation')}</li>
-              <li>{t('markdownConverter.info.securityNote')}</li>
+              <li>{t('markdownConverter.warning.htmlSafety')}</li>
+              <li>{t('markdownConverter.warning.sanitization')}</li>
             </ul>
           </div>
         </div>

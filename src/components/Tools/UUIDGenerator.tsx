@@ -36,8 +36,8 @@ export function UUIDGenerator({ onHistoryAdd }: ToolProps) {
     } else {
       onHistoryAdd?.({
         toolId: 'uuid-generator',
-        input: `${quantity}${t('uuidGenerator.history.count')} UUID ${version}`,
-        output: `${newUuids.length}${t('uuidGenerator.history.generated')}`
+        input: t('uuidGenerator.historyOutput.multiple').replace('{count}', quantity.toString()).replace('{version}', version),
+        output: t('uuidGenerator.historyOutput.generated').replace('{count}', newUuids.length.toString())
       });
     }
   };
@@ -56,7 +56,7 @@ export function UUIDGenerator({ onHistoryAdd }: ToolProps) {
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {t('uuidGenerator.label.version')}
+            {t('uuidGenerator.version.label')}
           </label>
           <div className="flex gap-4">
             <label className="flex items-center">
@@ -68,7 +68,7 @@ export function UUIDGenerator({ onHistoryAdd }: ToolProps) {
                 className="mr-2"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">
-                {t('uuidGenerator.option.v4')}
+                {t('uuidGenerator.version.v4')}
               </span>
             </label>
             <label className="flex items-center">
@@ -80,7 +80,7 @@ export function UUIDGenerator({ onHistoryAdd }: ToolProps) {
                 className="mr-2"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">
-                {t('uuidGenerator.option.v1')}
+                {t('uuidGenerator.version.v1')}
               </span>
             </label>
           </div>
@@ -88,7 +88,7 @@ export function UUIDGenerator({ onHistoryAdd }: ToolProps) {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {t('uuidGenerator.label.quantity')}
+            {t('uuidGenerator.quantity.label')}
           </label>
           <input
             type="number"
@@ -101,7 +101,7 @@ export function UUIDGenerator({ onHistoryAdd }: ToolProps) {
         </div>
 
         <Button onClick={handleGenerate} className="w-full">
-          {t('uuidGenerator.button.generate')}
+          {t('uuidGenerator.generate')}
         </Button>
       </div>
 
@@ -109,7 +109,7 @@ export function UUIDGenerator({ onHistoryAdd }: ToolProps) {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {t('uuidGenerator.label.generated')}
+              {t('uuidGenerator.result.label')}
             </h3>
             {uuidList.length > 1 && (
               <Button
@@ -118,9 +118,9 @@ export function UUIDGenerator({ onHistoryAdd }: ToolProps) {
                 size="sm"
               >
                 {isCopied ? (
-                  <><Check className="w-4 h-4 mr-1" /> {t('uuidGenerator.button.copied')}</>
+                  <><Check className="w-4 h-4 mr-1" /> {t('uuidGenerator.copied')}</>
                 ) : (
-                  <><Copy className="w-4 h-4 mr-1" /> {t('uuidGenerator.button.copyAll')}</>
+                  <><Copy className="w-4 h-4 mr-1" /> {t('uuidGenerator.copyAll')}</>
                 )}
               </Button>
             )}
@@ -143,7 +143,7 @@ export function UUIDGenerator({ onHistoryAdd }: ToolProps) {
                   {isCopied ? (
                     <Check className="w-4 h-4" />
                   ) : (
-                    <><Copy className="w-4 h-4 mr-1" /> {t('uuidGenerator.button.copy')}</>
+                    <><Copy className="w-4 h-4 mr-1" /> {t('uuidGenerator.copy')}</>
                   )}
                 </Button>
               </div>
@@ -152,10 +152,10 @@ export function UUIDGenerator({ onHistoryAdd }: ToolProps) {
 
           <div className="text-sm text-gray-600 dark:text-gray-400">
             <p>
-              <strong>{t('uuidGenerator.info.v4Title')}:</strong> {t('uuidGenerator.info.v4Description')}
+              <strong>UUID v4:</strong> {t('uuidGenerator.description.v4')}
             </p>
             <p>
-              <strong>{t('uuidGenerator.info.v1Title')}:</strong> {t('uuidGenerator.info.v1Description')}
+              <strong>UUID v1:</strong> {t('uuidGenerator.description.v1')}
             </p>
           </div>
         </div>

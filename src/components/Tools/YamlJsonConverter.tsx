@@ -59,10 +59,10 @@ export function YamlJsonConverter({ onHistoryAdd }: ToolProps) {
       onHistoryAdd?.({
         toolId: 'yaml-json-converter',
         input: `${inputFormat.toUpperCase()} text`,
-        output: t('yamlJsonConverter.history.converted').replace('{format}', inputFormat === 'yaml' ? 'JSON' : 'YAML')
+        output: inputFormat === 'yaml' ? t('yamlJsonConverter.result.yamlToJson') : t('yamlJsonConverter.result.jsonToYaml')
       });
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : t('yamlJsonConverter.error.conversionFailed');
+      const errorMessage = err instanceof Error ? err.message : '変換に失敗しました';
       setError(errorMessage);
       setOutputText('');
     }
@@ -112,7 +112,32 @@ export function YamlJsonConverter({ onHistoryAdd }: ToolProps) {
   };
 
   const insertSampleYaml = () => {
-    const sampleYaml = t('yamlJsonConverter.sample.yaml');
+    const sampleYaml = `server:
+  host: localhost
+  port: 8080
+  ssl:
+    enabled: true
+    cert_path: /path/to/cert.pem
+    key_path: /path/to/key.pem
+
+database:
+  type: postgresql
+  connection:
+    host: db.example.com
+    port: 5432
+    database: myapp
+    username: user
+    password: secret
+
+features:
+  - authentication
+  - logging
+  - monitoring
+
+settings:
+  debug: false
+  max_connections: 100
+  timeout: 30s`;
 
     setInputText(sampleYaml);
     setInputFormat('yaml');
@@ -170,7 +195,7 @@ export function YamlJsonConverter({ onHistoryAdd }: ToolProps) {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                {t('yamlJsonConverter.label.inputFormat')}:
+                {t('yamlJsonConverter.input.formatLabel')}
               </label>
               <select
                 value={inputFormat}
@@ -186,16 +211,16 @@ export function YamlJsonConverter({ onHistoryAdd }: ToolProps) {
             </div>
             
             <Button onClick={handleFormatSwitch} variant="outline" size="sm">
-              ⇄ {t('yamlJsonConverter.button.switchFormat')}
+              {t('yamlJsonConverter.button.swapInputOutput')}
             </Button>
           </div>
 
           <div className="flex space-x-2">
             <Button onClick={insertSampleYaml} variant="outline" size="sm">
-              {t('yamlJsonConverter.button.yamlSample')}
+              {t('yamlJsonConverter.sample.insertYaml')}
             </Button>
             <Button onClick={insertSampleJson} variant="outline" size="sm">
-              {t('yamlJsonConverter.button.jsonSample')}
+              {t('yamlJsonConverter.sample.insertJson')}
             </Button>
             <Button onClick={clearAll} variant="outline" size="sm">
               {t('yamlJsonConverter.button.clear')}
@@ -205,12 +230,12 @@ export function YamlJsonConverter({ onHistoryAdd }: ToolProps) {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {t('yamlJsonConverter.label.input').replace('{format}', inputFormat === 'yaml' ? 'YAML' : 'JSON')}
+            {inputFormat === 'yaml' ? t('yamlJsonConverter.input.yamlLabel') : t('yamlJsonConverter.input.jsonLabel')}
           </label>
           <textarea
             value={inputText}
             onChange={(e) => handleInputChange(e.target.value)}
-            placeholder={t('yamlJsonConverter.placeholder.input').replace('{format}', inputFormat === 'yaml' ? 'YAML' : 'JSON')}
+            placeholder={inputFormat === 'yaml' ? t('yamlJsonConverter.input.yamlPlaceholder') : t('yamlJsonConverter.input.jsonPlaceholder')}
             rows={12}
             className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono text-sm resize-y"
           />
@@ -219,14 +244,14 @@ export function YamlJsonConverter({ onHistoryAdd }: ToolProps) {
         {error && (
           <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
             <p className="text-red-600 dark:text-red-400 text-sm">
-              <strong>{t('yamlJsonConverter.label.error')}:</strong> {error}
+              <strong>{t('yamlJsonConverter.error.errorTitle')}</strong> {error}
             </p>
           </div>
         )}
 
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {t('yamlJsonConverter.label.output').replace('{format}', inputFormat === 'yaml' ? 'JSON' : 'YAML')}
+            {inputFormat === 'yaml' ? t('yamlJsonConverter.output.jsonLabel') : t('yamlJsonConverter.output.yamlLabel')}
           </h3>
           <div className="flex space-x-2">
             <Button onClick={handleConvert} variant="outline" size="sm">
@@ -246,7 +271,7 @@ export function YamlJsonConverter({ onHistoryAdd }: ToolProps) {
         <textarea
           value={outputText}
           readOnly
-          placeholder={t('yamlJsonConverter.placeholder.output').replace('{format}', inputFormat === 'yaml' ? 'JSON' : 'YAML')}
+          placeholder={inputFormat === 'yaml' ? t('yamlJsonConverter.output.jsonPlaceholder') : t('yamlJsonConverter.output.yamlPlaceholder')}
           rows={12}
           className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm resize-y"
         />
@@ -254,11 +279,11 @@ export function YamlJsonConverter({ onHistoryAdd }: ToolProps) {
         <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
           <p><strong>{t('yamlJsonConverter.features.title')}:</strong></p>
           <ul className="list-disc list-inside space-y-1">
-            <li><strong>{t('yamlJsonConverter.features.yamlToJson')}:</strong> {t('yamlJsonConverter.features.yamlToJsonDesc')}</li>
-            <li><strong>{t('yamlJsonConverter.features.jsonToYaml')}:</strong> {t('yamlJsonConverter.features.jsonToYamlDesc')}</li>
-            <li><strong>{t('yamlJsonConverter.features.realtime')}:</strong> {t('yamlJsonConverter.features.realtimeDesc')}</li>
-            <li><strong>{t('yamlJsonConverter.features.switch')}:</strong> {t('yamlJsonConverter.features.switchDesc')}</li>
-            <li><strong>{t('yamlJsonConverter.features.errorDetection')}:</strong> {t('yamlJsonConverter.features.errorDetectionDesc')}</li>
+            <li>{t('yamlJsonConverter.features.yamlToJsonConversion')}</li>
+            <li>{t('yamlJsonConverter.features.jsonToYamlConversion')}</li>
+            <li>{t('yamlJsonConverter.features.realtimeConversion')}</li>
+            <li>{t('yamlJsonConverter.features.inputOutputSwap')}</li>
+            <li>{t('yamlJsonConverter.features.errorValidation')}</li>
           </ul>
         </div>
       </div>
