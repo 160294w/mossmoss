@@ -64,7 +64,7 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
     }
 
     if (availableChars.length === 0) {
-      return t('randomGenerator.error.noCharsSelected');
+      return t('randomGenerator.error.noChars');
     }
 
     // ランダム文字列生成
@@ -84,10 +84,10 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
     // 履歴に追加
     setGenerationHistory(prev => [newString, ...prev.slice(0, 4)]); // 最新5件まで
 
-    if (onHistoryAdd && !newString.startsWith(t('randomGenerator.error.prefix'))) {
+    if (onHistoryAdd && !newString.includes('エラー') && !newString.includes('Error')) {
       onHistoryAdd({
         toolId: 'random-generator',
-        input: `${t('randomGenerator.history.length')}:${options.length}, ${t('randomGenerator.history.charTypes')}:${getCharTypeString()}`,
+        input: t('randomGenerator.historyInput.length').replace('{length}', options.length.toString()).replace('{types}', getCharTypeString()),
         output: newString
       });
     }
@@ -95,10 +95,10 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
 
   const getCharTypeString = () => {
     const types = [];
-    if (options.includeNumbers) types.push(t('randomGenerator.charType.numbers'));
-    if (options.includeUppercase) types.push(t('randomGenerator.charType.uppercase'));
-    if (options.includeLowercase) types.push(t('randomGenerator.charType.lowercase'));
-    if (options.includeSymbols) types.push(t('randomGenerator.charType.symbols'));
+    if (options.includeNumbers) types.push(t('randomGenerator.historyInput.types.numbers'));
+    if (options.includeUppercase) types.push(t('randomGenerator.historyInput.types.uppercase'));
+    if (options.includeLowercase) types.push(t('randomGenerator.historyInput.types.lowercase'));
+    if (options.includeSymbols) types.push(t('randomGenerator.historyInput.types.symbols'));
     return types.join(', ');
   };
 
@@ -125,7 +125,7 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
       {/* プリセット */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          {t('randomGenerator.label.preset')}
+          {t('randomGenerator.presets.label')}
         </label>
         <div className="flex flex-wrap gap-2">
           {presetConfigs.map((preset) => (
@@ -144,7 +144,7 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
       {/* 長さ設定 */}
       <div>
         <label htmlFor="length" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          {t('randomGenerator.label.length')}: {options.length}
+          {t('randomGenerator.length.label').replace('{length}', options.length.toString())}
         </label>
         <input
           id="length"
@@ -164,7 +164,7 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
       {/* 文字種選択 */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          {t('randomGenerator.label.charTypes')}
+          {t('randomGenerator.charTypes.label')}
         </label>
         <div className="grid grid-cols-2 gap-3">
           <label className="flex items-center">
@@ -174,7 +174,7 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
               onChange={(e) => setOptions(prev => ({ ...prev, includeNumbers: e.target.checked }))}
               className="rounded border-gray-300 dark:border-gray-600 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"
             />
-            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t('randomGenerator.option.numbers')}</span>
+            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t('randomGenerator.charType.numbers')}</span>
           </label>
 
           <label className="flex items-center">
@@ -184,7 +184,7 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
               onChange={(e) => setOptions(prev => ({ ...prev, includeUppercase: e.target.checked }))}
               className="rounded border-gray-300 dark:border-gray-600 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"
             />
-            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t('randomGenerator.option.uppercase')}</span>
+            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t('randomGenerator.charType.uppercase')}</span>
           </label>
 
           <label className="flex items-center">
@@ -194,7 +194,7 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
               onChange={(e) => setOptions(prev => ({ ...prev, includeLowercase: e.target.checked }))}
               className="rounded border-gray-300 dark:border-gray-600 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"
             />
-            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t('randomGenerator.option.lowercase')}</span>
+            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t('randomGenerator.charType.lowercase')}</span>
           </label>
 
           <label className="flex items-center">
@@ -204,7 +204,7 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
               onChange={(e) => setOptions(prev => ({ ...prev, includeSymbols: e.target.checked }))}
               className="rounded border-gray-300 dark:border-gray-600 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"
             />
-            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t('randomGenerator.option.symbols')}</span>
+            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t('randomGenerator.charType.symbols')}</span>
           </label>
         </div>
       </div>
@@ -212,7 +212,7 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
       {/* 除外オプション */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          {t('randomGenerator.label.excludeOptions')}
+          {t('randomGenerator.excludeOptions.label')}
         </label>
         <div className="space-y-2">
           <label className="flex items-center">
@@ -222,7 +222,7 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
               onChange={(e) => setOptions(prev => ({ ...prev, excludeSimilar: e.target.checked }))}
               className="rounded border-gray-300 dark:border-gray-600 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"
             />
-            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t('randomGenerator.option.excludeSimilar')}</span>
+            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t('randomGenerator.excludeSimilar')}</span>
           </label>
 
           <label className="flex items-center">
@@ -232,7 +232,7 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
               onChange={(e) => setOptions(prev => ({ ...prev, excludeAmbiguous: e.target.checked }))}
               className="rounded border-gray-300 dark:border-gray-600 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"
             />
-            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t('randomGenerator.option.excludeAmbiguous')}</span>
+            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">{t('randomGenerator.excludeAmbiguous')}</span>
           </label>
         </div>
       </div>
@@ -241,7 +241,7 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
       <div>
         <Button onClick={handleGenerate} size="lg" className="w-full md:w-auto">
           <Dices className="w-4 h-4 mr-1" />
-          {t('randomGenerator.button.generate')}
+          {t('randomGenerator.generate')}
         </Button>
       </div>
 
@@ -249,7 +249,7 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
       {generatedText && (
         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {t('randomGenerator.label.result')}
+            {t('randomGenerator.result.label')}
           </label>
           <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md p-3 mb-3">
             <code className="text-lg font-mono break-all text-gray-900 dark:text-white">
@@ -262,14 +262,14 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
               onClick={handleCopy}
               className="flex items-center gap-2"
             >
-              {isCopied ? t('randomGenerator.button.copied') : t('randomGenerator.button.copy')}
+              {isCopied ? t('randomGenerator.copied') : t('randomGenerator.copy')}
             </Button>
             <Button 
               variant="outline" 
               onClick={handleGenerate}
             >
               <RefreshCw className="w-4 h-4 mr-1" />
-              {t('randomGenerator.button.regenerate')}
+              {t('randomGenerator.regenerate')}
             </Button>
           </div>
         </div>
@@ -278,7 +278,7 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
       {/* 生成履歴 */}
       {generationHistory.length > 0 && (
         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t('randomGenerator.label.history')}</h3>
+          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t('randomGenerator.history.label')}</h3>
           <div className="space-y-2">
             {generationHistory.map((item, index) => (
               <div key={index} className="flex items-center justify-between bg-white dark:bg-gray-800 rounded p-2">
@@ -301,14 +301,14 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
 
       {/* 文字種プレビュー */}
       <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('randomGenerator.label.usedChars')}</h3>
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('randomGenerator.usedChars.label')}</h3>
         <div className="text-sm text-gray-600 dark:text-gray-400 font-mono break-all">
           {options.includeNumbers && <div>{t('randomGenerator.charType.numbers')}: {charSets.numbers}</div>}
           {options.includeUppercase && <div>{t('randomGenerator.charType.uppercase')}: {charSets.uppercase}</div>}
           {options.includeLowercase && <div>{t('randomGenerator.charType.lowercase')}: {charSets.lowercase}</div>}
           {options.includeSymbols && <div>{t('randomGenerator.charType.symbols')}: {charSets.symbols}</div>}
           {!options.includeNumbers && !options.includeUppercase && !options.includeLowercase && !options.includeSymbols && (
-            <div className="text-red-500">{t('randomGenerator.error.noCharsSelected')}</div>
+            <div className="text-red-500">{t('randomGenerator.noCharsSelected')}</div>
           )}
         </div>
       </div>
