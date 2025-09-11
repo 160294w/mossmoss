@@ -4,9 +4,6 @@ import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ToolProps } from '../../types';
-import { DNAHelixEffect } from '../Effects/DNAHelixEffect';
-import { HologramProjection } from '../Effects/HologramProjection';
-import { MagneticAttraction } from '../Effects/MagneticAttraction';
 
 type HashType = 'md5' | 'sha1' | 'sha256';
 
@@ -260,122 +257,99 @@ SHA-256: ${hashResults.sha256}`;
         </div>
       )}
 
-      {/* 読み込み中 - DNA螺旋エフェクト */}
+      {/* 読み込み中 */}
       {loading && (
-        <div className="flex flex-col items-center justify-center py-12">
-          <DNAHelixEffect
-            trigger={loading}
-            particleCount={15}
-            helixHeight={120}
-            helixWidth={80}
-            rotationSpeed={2.5}
-            colors={['#00ff88', '#0088ff', '#8800ff']}
-          />
-          <div className="mt-4 text-gray-500 dark:text-gray-400 text-lg font-medium">
-            {t('hashGenerator.generating')}
-          </div>
-          <div className="mt-2 text-sm text-gray-400 dark:text-gray-500">
-            暗号学的ハッシュを生成中...
-          </div>
+        <div className="flex items-center justify-center py-8">
+          <div className="text-gray-500 dark:text-gray-400">{t('hashGenerator.generating')}</div>
         </div>
       )}
 
-      {/* ハッシュ結果 - ホログラム表示 */}
+      {/* ハッシュ結果 */}
       {!loading && hasResults && (
-        <HologramProjection isActive={!!hasResults} glitchIntensity="low" className="space-y-4">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-medium text-cyan-400">{t('hashGenerator.result.title')}</h3>
-            <MagneticAttraction strength="medium" range={100}>
-              <Button onClick={handleCopyAll} size="sm" variant="outline" className="border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black">
-                <Copy className="w-4 h-4 mr-1" />
-                {t('hashGenerator.copyAll')}
-              </Button>
-            </MagneticAttraction>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('hashGenerator.result.title')}</h3>
+            <Button onClick={handleCopyAll} size="sm" variant="outline">
+              <Copy className="w-4 h-4 mr-1" />
+              {t('hashGenerator.copyAll')}
+            </Button>
           </div>
 
           {/* MD5 */}
-          <div className="bg-gray-900 bg-opacity-80 border border-cyan-400 rounded-lg p-4">
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="text-sm font-medium text-cyan-300 flex items-center gap-2">
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                 MD5
-                <span className="text-xs bg-orange-600 text-orange-100 px-2 py-1 rounded">
+                <span className="text-xs bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 px-2 py-1 rounded">
                   {t('hashGenerator.md5.deprecated')}
                 </span>
               </h4>
-              <MagneticAttraction strength="weak" range={60}>
-                <Button size="sm" variant="outline" onClick={() => handleCopyHash('md5')} className="border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black">
-                  {isCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                </Button>
-              </MagneticAttraction>
+              <Button size="sm" variant="outline" onClick={() => handleCopyHash('md5')}>
+                {isCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              </Button>
             </div>
-            <code className="block bg-black border border-cyan-400 rounded p-2 text-sm font-mono break-all text-cyan-100">
+            <code className="block bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded p-2 text-sm font-mono break-all text-gray-900 dark:text-white">
               {hashResults.md5}
             </code>
-            <p className="mt-1 text-xs text-cyan-400">
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               <AlertTriangle className="w-3 h-3 inline mr-1" /> {t('hashGenerator.md5.warning')}
             </p>
           </div>
 
           {/* SHA-1 */}
-          <div className="bg-gray-900 bg-opacity-80 border border-cyan-400 rounded-lg p-4">
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="text-sm font-medium text-cyan-300 flex items-center gap-2">
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                 SHA-1
-                <span className="text-xs bg-yellow-600 text-yellow-100 px-2 py-1 rounded">
+                <span className="text-xs bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded">
                   {t('hashGenerator.sha1.notRecommended')}
                 </span>
               </h4>
-              <MagneticAttraction strength="weak" range={60}>
-                <Button size="sm" variant="outline" onClick={() => handleCopyHash('sha1')} className="border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black">
-                  {isCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                </Button>
-              </MagneticAttraction>
+              <Button size="sm" variant="outline" onClick={() => handleCopyHash('sha1')}>
+                {isCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              </Button>
             </div>
-            <code className="block bg-black border border-cyan-400 rounded p-2 text-sm font-mono break-all text-cyan-100">
+            <code className="block bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded p-2 text-sm font-mono break-all text-gray-900 dark:text-white">
               {hashResults.sha1}
             </code>
-            <p className="mt-1 text-xs text-cyan-400">
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               <AlertTriangle className="w-3 h-3 inline mr-1" /> {t('hashGenerator.sha1.warning')}
             </p>
           </div>
 
           {/* SHA-256 */}
-          <div className="bg-gray-900 bg-opacity-80 border border-cyan-400 rounded-lg p-4">
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="text-sm font-medium text-cyan-300 flex items-center gap-2">
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                 SHA-256
-                <span className="text-xs bg-green-600 text-green-100 px-2 py-1 rounded">
+                <span className="text-xs bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded">
                   {t('hashGenerator.sha256.recommended')}
                 </span>
               </h4>
-              <MagneticAttraction strength="weak" range={60}>
-                <Button size="sm" variant="outline" onClick={() => handleCopyHash('sha256')} className="border-cyan-400 text-cyan-400 hover:bg-cyan-400 hover:text-black">
-                  {isCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                </Button>
-              </MagneticAttraction>
+              <Button size="sm" variant="outline" onClick={() => handleCopyHash('sha256')}>
+                {isCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              </Button>
             </div>
-            <code className="block bg-black border border-cyan-400 rounded p-2 text-sm font-mono break-all text-cyan-100">
+            <code className="block bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded p-2 text-sm font-mono break-all text-gray-900 dark:text-white">
               {hashResults.sha256}
             </code>
-            <p className="mt-1 text-xs text-cyan-400">
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               <Check className="w-3 h-3 inline mr-1" /> {t('hashGenerator.sha256.info')}
             </p>
           </div>
-        </HologramProjection>
+        </div>
       )}
 
       {/* アクションボタン */}
       <div className="flex gap-3">
-        <MagneticAttraction strength="medium" range={80}>
-          <Button 
-            variant="outline" 
-            onClick={handleReset}
-            disabled={!hasResults && !inputText && !fileName}
-          >
-            <RotateCcw className="w-4 h-4 mr-1" />
-            リセット
-          </Button>
-        </MagneticAttraction>
+        <Button 
+          variant="outline" 
+          onClick={handleReset}
+          disabled={!hasResults && !inputText && !fileName}
+        >
+          <RotateCcw className="w-4 h-4 mr-1" />
+          リセット
+        </Button>
       </div>
 
       {/* ハッシュアルゴリズムについて */}

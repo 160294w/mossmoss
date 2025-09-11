@@ -4,15 +4,12 @@ import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ToolProps } from '../../types';
-import { DNAGeneration } from '../Effects/DNAHelixEffect';
-import { MagneticAttraction } from '../Effects/MagneticAttraction';
 
 export function UUIDGenerator({ onHistoryAdd }: ToolProps) {
   const { t } = useLanguage();
   const [version, setVersion] = useState<'v4' | 'v1'>('v4');
   const [quantity, setQuantity] = useState(1);
   const [uuidList, setUuidList] = useState<string[]>([]);
-  const [isGenerating, setIsGenerating] = useState(false);
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
   const generateUUID = () => {
@@ -26,15 +23,9 @@ export function UUIDGenerator({ onHistoryAdd }: ToolProps) {
     }
   };
 
-  const handleGenerate = async () => {
-    setIsGenerating(true);
-    
-    // DNA螺旋エフェクトの演出時間
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+  const handleGenerate = () => {
     const newUuids = Array.from({ length: quantity }, () => generateUUID());
     setUuidList(newUuids);
-    setIsGenerating(false);
     
     if (newUuids.length === 1) {
       onHistoryAdd?.({
@@ -109,35 +100,30 @@ export function UUIDGenerator({ onHistoryAdd }: ToolProps) {
           />
         </div>
 
-        <MagneticAttraction strength="medium" range={100}>
-          <Button onClick={handleGenerate} className="w-full" disabled={isGenerating}>
-            {isGenerating ? 'DNA配列生成中...' : t('uuidGenerator.generate')}
-          </Button>
-        </MagneticAttraction>
+        <Button onClick={handleGenerate} className="w-full">
+          {t('uuidGenerator.generate')}
+        </Button>
       </div>
 
       {uuidList.length > 0 && (
-        <DNAGeneration trigger={uuidList.length > 0}>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                {t('uuidGenerator.result.label')}
-              </h3>
-              {uuidList.length > 1 && (
-                <MagneticAttraction strength="medium" range={80}>
-                  <Button
-                    onClick={handleCopyAll}
-                    variant="outline"
-                    size="sm"
-                  >
-                    {isCopied ? (
-                      <><Check className="w-4 h-4 mr-1" /> {t('uuidGenerator.copied')}</>
-                    ) : (
-                      <><Copy className="w-4 h-4 mr-1" /> {t('uuidGenerator.copyAll')}</>
-                    )}
-                  </Button>
-                </MagneticAttraction>
-              )}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              {t('uuidGenerator.result.label')}
+            </h3>
+            {uuidList.length > 1 && (
+              <Button
+                onClick={handleCopyAll}
+                variant="outline"
+                size="sm"
+              >
+                {isCopied ? (
+                  <><Check className="w-4 h-4 mr-1" /> {t('uuidGenerator.copied')}</>
+                ) : (
+                  <><Copy className="w-4 h-4 mr-1" /> {t('uuidGenerator.copyAll')}</>
+                )}
+              </Button>
+            )}
           </div>
 
           <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -149,19 +135,17 @@ export function UUIDGenerator({ onHistoryAdd }: ToolProps) {
                 <code className="flex-1 text-sm font-mono text-gray-900 dark:text-white break-all">
                   {uuid}
                 </code>
-                <MagneticAttraction strength="weak" range={60}>
-                  <Button
-                    onClick={() => handleCopy(uuid)}
-                    variant="outline"
-                    size="sm"
-                  >
-                    {isCopied ? (
-                      <Check className="w-4 h-4" />
-                    ) : (
-                      <><Copy className="w-4 h-4 mr-1" /> {t('uuidGenerator.copy')}</>
-                    )}
-                  </Button>
-                </MagneticAttraction>
+                <Button
+                  onClick={() => handleCopy(uuid)}
+                  variant="outline"
+                  size="sm"
+                >
+                  {isCopied ? (
+                    <Check className="w-4 h-4" />
+                  ) : (
+                    <><Copy className="w-4 h-4 mr-1" /> {t('uuidGenerator.copy')}</>
+                  )}
+                </Button>
               </div>
             ))}
           </div>
@@ -175,7 +159,6 @@ export function UUIDGenerator({ onHistoryAdd }: ToolProps) {
             </p>
           </div>
         </div>
-        </DNAGeneration>
       )}
     </div>
   );
