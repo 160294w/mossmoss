@@ -1,15 +1,20 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Copy, RotateCcw, Check } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { CountUpAnimation } from '../Effects/CountUpAnimation';
+import { useParticleEffect } from '../Effects/ParticleEffect';
 
 export function CharacterCount() {
   const [text, setText] = useState('');
   const [includeSpaces, setIncludeSpaces] = useState(true);
   const [includeNewlines, setIncludeNewlines] = useState(true);
+  const [previousCounts, setPreviousCounts] = useState({ total: 0, words: 0, lines: 0 });
   const { copyToClipboard, isCopied } = useCopyToClipboard();
   const { t } = useLanguage();
+  const { triggerParticles } = useParticleEffect();
+  const copyButtonRef = useRef<HTMLButtonElement>(null);
 
   // 文字数カウント関数
   const getCharCount = (text: string): { total: number; noSpaces: number; noNewlines: number; noSpacesNewlines: number; lines: number; words: number } => {
@@ -50,10 +55,29 @@ export function CharacterCount() {
   const handleCopy = async () => {
     const result = `${t('characterCount.input.label')}: ${text}\n${t('characterCount.characters')}: ${displayCount}\n${t('characterCount.words')}: ${counts.words}\n${t('characterCount.lines')}: ${counts.lines}`;
     await copyToClipboard(result);
+    
+    // パーティクルエフェクトを発生
+    if (copyButtonRef.current) {
+      triggerParticles({
+        particleCount: 12,
+        colors: ['#00ff88', '#4ecdc4', '#45b7d1'],
+        element: copyButtonRef.current
+      });
+    }
   };
 
   const handleReset = () => {
     setText('');
+    setPreviousCounts({ total: 0, words: 0, lines: 0 });
+  };
+
+  const handleTextChange = (value: string) => {
+    setPreviousCounts({
+      total: displayCount,
+      words: counts.words,
+      lines: counts.lines
+    });
+    setText(value);
   };
 
   return (
@@ -66,7 +90,7 @@ export function CharacterCount() {
         <textarea
           id="text-input"
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => handleTextChange(e.target.value)}
           placeholder={t('characterCount.input.placeholder')}
           className="w-full h-40 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-y"
         />
@@ -103,25 +127,45 @@ export function CharacterCount() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
-              {displayCount}
+              <CountUpAnimation
+                from={previousCounts.total}
+                to={displayCount}
+                duration={0.5}
+                trigger={text.length > 0}
+              />
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">{t('characterCount.characters')}</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {counts.words}
+              <CountUpAnimation
+                from={previousCounts.words}
+                to={counts.words}
+                duration={0.5}
+                trigger={text.length > 0}
+              />
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">{t('characterCount.words')}</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-              {counts.lines}
+              <CountUpAnimation
+                from={previousCounts.lines}
+                to={counts.lines}
+                duration={0.5}
+                trigger={text.length > 0}
+              />
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">{t('characterCount.lines')}</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-              {((text.match(/[あ-んア-ヶ一-龯]/g) || []).length)}
+              <CountUpAnimation
+                from={0}
+                to={(text.match(/[あ-んア-ヶ一-龯]/g) || []).length}
+                duration={0.5}
+                trigger={text.length > 0}
+              />
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">{t('characterCount.japaneseChars')}</div>
           </div>
@@ -139,6 +183,7 @@ export function CharacterCount() {
       {/* アクションボタン */}
       <div className="flex gap-3">
         <Button 
+          ref={copyButtonRef}
           onClick={handleCopy} 
           disabled={!text}
           className="flex items-center gap-2"

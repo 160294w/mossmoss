@@ -5,6 +5,8 @@ import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ToolProps } from '../../types';
+import { QRScanner } from '../Effects/RadarScan';
+import { useParticleEffect } from '../Effects/ParticleEffect';
 
 type ErrorCorrectionLevel = 'L' | 'M' | 'Q' | 'H';
 
@@ -13,6 +15,7 @@ export function QRGenerator({ onHistoryAdd }: ToolProps) {
   const [qrDataURL, setQRDataURL] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isScanning, setIsScanning] = useState(false);
   const [options, setOptions] = useState({
     size: 300,
     margin: 4,
@@ -21,8 +24,11 @@ export function QRGenerator({ onHistoryAdd }: ToolProps) {
     backgroundColor: '#ffffff',
   });
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const downloadButtonRef = useRef<HTMLButtonElement>(null);
+  const copyButtonRef = useRef<HTMLButtonElement>(null);
   const { copyToClipboard, isCopied } = useCopyToClipboard();
   const { t } = useLanguage();
+  const { triggerParticles } = useParticleEffect();
 
   // QRコード生成
   const generateQR = async (text: string) => {
@@ -34,6 +40,9 @@ export function QRGenerator({ onHistoryAdd }: ToolProps) {
 
     setLoading(true);
     setError('');
+    
+    // スキャンエフェクト開始
+    setIsScanning(true);
 
     try {
       const qrOptions = {
@@ -67,6 +76,8 @@ export function QRGenerator({ onHistoryAdd }: ToolProps) {
       setQRDataURL('');
     } finally {
       setLoading(false);
+      // スキャンエフェクトを少し遅らせて終了
+      setTimeout(() => setIsScanning(false), 800);
     }
   };
 
@@ -89,6 +100,15 @@ export function QRGenerator({ onHistoryAdd }: ToolProps) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    // パーティクルエフェクト
+    if (downloadButtonRef.current) {
+      triggerParticles({
+        particleCount: 20,
+        colors: ['#4facfe', '#00f2fe', '#45b7d1'],
+        element: downloadButtonRef.current
+      });
+    }
   };
 
   // QRコードをクリップボードにコピー
@@ -104,6 +124,15 @@ export function QRGenerator({ onHistoryAdd }: ToolProps) {
     } catch (err) {
       // フォールバック: データURLをコピー
       await copyToClipboard(qrDataURL);
+    }
+    
+    // パーティクルエフェクト
+    if (copyButtonRef.current) {
+      triggerParticles({
+        particleCount: 15,
+        colors: ['#00ff88', '#4ecdc4', '#45b7d1'],
+        element: copyButtonRef.current
+      });
     }
   };
 
@@ -292,16 +321,29 @@ export function QRGenerator({ onHistoryAdd }: ToolProps) {
 
         {!loading && !error && qrDataURL && (
           <div className="text-center">
-            <div className="inline-block bg-white p-4 rounded-lg shadow-sm">
+            <div className="relative inline-block bg-white p-4 rounded-lg shadow-sm">
               <img src={qrDataURL} alt="Generated QR Code" className="max-w-full" />
+              <QRScanner 
+                isActive={isScanning} 
+                onComplete={() => setIsScanning(false)}
+              />
             </div>
             
             <div className="mt-4 flex justify-center gap-3">
-              <Button onClick={downloadQR} className="flex items-center gap-2">
+              <Button 
+                ref={downloadButtonRef}
+                onClick={downloadQR} 
+                className="flex items-center gap-2"
+              >
                 <Download className="w-4 h-4" />
                 {t('qrGenerator.download')}
               </Button>
-              <Button variant="outline" onClick={copyQR} className="flex items-center gap-2">
+              <Button 
+                ref={copyButtonRef}
+                variant="outline" 
+                onClick={copyQR} 
+                className="flex items-center gap-2"
+              >
                 {isCopied ? (
                   <><Check className="w-4 h-4" /> {t('common.copied')}</>
                 ) : (
