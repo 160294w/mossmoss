@@ -4,6 +4,8 @@ import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ToolProps } from '../../types';
+import { DNAGeneration } from '../Effects/DNAHelixEffect';
+import { MagneticAttraction } from '../Effects/MagneticAttraction';
 
 type ConversionMode = 'encode' | 'decode';
 type ConversionType = 'base64' | 'base64url' | 'base58';
@@ -14,6 +16,7 @@ export function BaseConverter({ onHistoryAdd }: ToolProps) {
   const [mode, setMode] = useState<ConversionMode>('encode');
   const [conversionType, setConversionType] = useState<ConversionType>('base64');
   const [error, setError] = useState('');
+  const [isConverting, setIsConverting] = useState(false);
   const { copyToClipboard, isCopied } = useCopyToClipboard();
   const { t } = useLanguage();
 
@@ -148,17 +151,28 @@ export function BaseConverter({ onHistoryAdd }: ToolProps) {
 
   // リアルタイム変換
   useEffect(() => {
-    const { output: result, error } = convertText(inputText, conversionType, mode);
-    setOutputText(result);
-    setError(error);
+    const convertWithEffect = async () => {
+      if (inputText.trim()) {
+        setIsConverting(true);
+        // DNA螺旋エフェクトの演出時間
+        await new Promise(resolve => setTimeout(resolve, 400));
+      }
+      
+      const { output: result, error } = convertText(inputText, conversionType, mode);
+      setOutputText(result);
+      setError(error);
+      setIsConverting(false);
 
-    if (result && !error && onHistoryAdd) {
-      onHistoryAdd({
-        toolId: 'base-converter',
-        input: inputText.slice(0, 50) + (inputText.length > 50 ? '...' : ''),
-        output: mode === 'encode' ? t('baseConverter.historyOutput.encode').replace('{format}', conversionType.toUpperCase()) : t('baseConverter.historyOutput.decode').replace('{format}', conversionType.toUpperCase())
-      });
-    }
+      if (result && !error && onHistoryAdd) {
+        onHistoryAdd({
+          toolId: 'base-converter',
+          input: inputText.slice(0, 50) + (inputText.length > 50 ? '...' : ''),
+          output: mode === 'encode' ? t('baseConverter.historyOutput.encode').replace('{format}', conversionType.toUpperCase()) : t('baseConverter.historyOutput.decode').replace('{format}', conversionType.toUpperCase())
+        });
+      }
+    };
+    
+    convertWithEffect();
   }, [inputText, conversionType, mode]);
 
   const handleCopy = async () => {
@@ -195,22 +209,26 @@ export function BaseConverter({ onHistoryAdd }: ToolProps) {
             {t('baseConverter.direction.label')}
           </label>
           <div className="flex gap-2">
-            <Button
-              variant={mode === 'encode' ? 'primary' : 'outline'}
-              onClick={() => setMode('encode')}
-              size="sm"
-              className="flex-1"
-            >
-              {t('baseConverter.mode.encode')}
-            </Button>
-            <Button
-              variant={mode === 'decode' ? 'primary' : 'outline'}
-              onClick={() => setMode('decode')}
-              size="sm"
-              className="flex-1"
-            >
-              {t('baseConverter.mode.decode')}
-            </Button>
+            <MagneticAttraction strength="medium" range={80}>
+              <Button
+                variant={mode === 'encode' ? 'primary' : 'outline'}
+                onClick={() => setMode('encode')}
+                size="sm"
+                className="flex-1"
+              >
+                {t('baseConverter.mode.encode')}
+              </Button>
+            </MagneticAttraction>
+            <MagneticAttraction strength="medium" range={80}>
+              <Button
+                variant={mode === 'decode' ? 'primary' : 'outline'}
+                onClick={() => setMode('decode')}
+                size="sm"
+                className="flex-1"
+              >
+                {t('baseConverter.mode.decode')}
+              </Button>
+            </MagneticAttraction>
           </div>
         </div>
 
@@ -230,9 +248,11 @@ export function BaseConverter({ onHistoryAdd }: ToolProps) {
         </div>
 
         <div className="flex items-end">
-          <Button size="sm" variant="outline" onClick={insertSample} className="w-full">
-            {t('baseConverter.button.insertSample')}
-          </Button>
+          <MagneticAttraction strength="medium" range={80}>
+            <Button size="sm" variant="outline" onClick={insertSample} className="w-full">
+              {t('baseConverter.button.insertSample')}
+            </Button>
+          </MagneticAttraction>
         </div>
       </div>
 
@@ -268,50 +288,58 @@ export function BaseConverter({ onHistoryAdd }: ToolProps) {
         </div>
       )}
 
-      {/* 出力エリア */}
-      <div>
-        <label htmlFor="output-text" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          {mode === 'encode' ? t('baseConverter.input.encodedText').replace('{format}', conversionType.toUpperCase()) : t('baseConverter.input.decodedText')}
-        </label>
-        <textarea
-          id="output-text"
-          value={outputText}
-          readOnly
-          className="w-full h-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-600 text-gray-900 dark:text-white resize-y font-mono text-sm"
-        />
-        {outputText && (
-          <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {t('baseConverter.stats.chars')}: {outputText.length} | {t('baseConverter.stats.bytes')}: {new TextEncoder().encode(outputText).length}
-          </div>
-        )}
-      </div>
+      {/* 出力エリア - DNA螺旋エフェクト */}
+      <DNAGeneration trigger={isConverting || !!outputText}>
+        <div>
+          <label htmlFor="output-text" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            {mode === 'encode' ? t('baseConverter.input.encodedText').replace('{format}', conversionType.toUpperCase()) : t('baseConverter.input.decodedText')}
+          </label>
+          <textarea
+            id="output-text"
+            value={isConverting ? 'DNA配列変換中...' : outputText}
+            readOnly
+            className="w-full h-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-600 text-gray-900 dark:text-white resize-y font-mono text-sm"
+          />
+          {outputText && !isConverting && (
+            <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              {t('baseConverter.stats.chars')}: {outputText.length} | {t('baseConverter.stats.bytes')}: {new TextEncoder().encode(outputText).length}
+            </div>
+          )}
+        </div>
+      </DNAGeneration>
 
       {/* アクションボタン */}
       <div className="flex gap-3 flex-wrap">
-        <Button 
-          onClick={handleCopy} 
-          disabled={!outputText}
-          className="flex items-center gap-2"
-        >
-          {isCopied ? `✓ ${t('baseConverter.copied')}` : `📋 ${t('baseConverter.button.copyResult')}`}
-        </Button>
-        <Button 
-          variant="outline" 
-          onClick={handleSwap}
-          disabled={!outputText}
-          className="flex items-center gap-2"
-        >
-          <RotateCcw className="w-4 h-4 mr-1" />
-          {t('baseConverter.button.swap')}
-        </Button>
-        <Button 
-          variant="outline" 
-          onClick={handleReset}
-          disabled={!inputText}
-        >
-          <Trash2 className="w-4 h-4 mr-1" />
-          {t('baseConverter.button.reset')}
-        </Button>
+        <MagneticAttraction strength="strong" range={100}>
+          <Button 
+            onClick={handleCopy} 
+            disabled={!outputText || isConverting}
+            className="flex items-center gap-2"
+          >
+            {isCopied ? `✓ ${t('baseConverter.copied')}` : `📋 ${t('baseConverter.button.copyResult')}`}
+          </Button>
+        </MagneticAttraction>
+        <MagneticAttraction strength="medium" range={80}>
+          <Button 
+            variant="outline" 
+            onClick={handleSwap}
+            disabled={!outputText || isConverting}
+            className="flex items-center gap-2"
+          >
+            <RotateCcw className="w-4 h-4 mr-1" />
+            {t('baseConverter.button.swap')}
+          </Button>
+        </MagneticAttraction>
+        <MagneticAttraction strength="medium" range={80}>
+          <Button 
+            variant="outline" 
+            onClick={handleReset}
+            disabled={!inputText}
+          >
+            <Trash2 className="w-4 h-4 mr-1" />
+            {t('baseConverter.button.reset')}
+          </Button>
+        </MagneticAttraction>
       </div>
 
       {/* フォーマット説明 */}
