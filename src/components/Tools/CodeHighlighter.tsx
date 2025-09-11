@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ToolProps } from '../../types';
+import { HologramProjection } from '../Effects/HologramProjection';
+import { MagneticAttraction } from '../Effects/MagneticAttraction';
 
 type SupportedLanguage = 'python' | 'ruby' | 'c' | 'shell' | 'go' | 'javascript' | 'typescript' | 'json' | 'html' | 'css' | 'auto';
 
@@ -409,72 +411,108 @@ const userService = new UserService('/api');`,
             {t('codeHighlighter.sample.insertLabel')}
           </label>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
-            <Button onClick={() => insertSample('python')} variant="outline" size="sm">
-              Python
-            </Button>
-            <Button onClick={() => insertSample('javascript')} variant="outline" size="sm">
-              JavaScript
-            </Button>
-            <Button onClick={() => insertSample('typescript')} variant="outline" size="sm">
-              TypeScript
-            </Button>
-            <Button onClick={() => insertSample('go')} variant="outline" size="sm">
-              Go
-            </Button>
-            <Button onClick={() => insertSample('ruby')} variant="outline" size="sm">
-              Ruby
-            </Button>
-            <Button onClick={() => insertSample('c')} variant="outline" size="sm">
-              C
-            </Button>
-            <Button onClick={() => insertSample('shell')} variant="outline" size="sm">
-              Shell
-            </Button>
-            <Button onClick={() => insertSample('html')} variant="outline" size="sm">
-              HTML
-            </Button>
-            <Button onClick={() => insertSample('css')} variant="outline" size="sm">
-              CSS
-            </Button>
-            <Button onClick={() => insertSample('json')} variant="outline" size="sm">
-              JSON
-            </Button>
+            <MagneticAttraction strength="weak" range={50}>
+              <Button onClick={() => insertSample('python')} variant="outline" size="sm">
+                Python
+              </Button>
+            </MagneticAttraction>
+            <MagneticAttraction strength="weak" range={50}>
+              <Button onClick={() => insertSample('javascript')} variant="outline" size="sm">
+                JavaScript
+              </Button>
+            </MagneticAttraction>
+            <MagneticAttraction strength="weak" range={50}>
+              <Button onClick={() => insertSample('typescript')} variant="outline" size="sm">
+                TypeScript
+              </Button>
+            </MagneticAttraction>
+            <MagneticAttraction strength="weak" range={50}>
+              <Button onClick={() => insertSample('go')} variant="outline" size="sm">
+                Go
+              </Button>
+            </MagneticAttraction>
+            <MagneticAttraction strength="weak" range={50}>
+              <Button onClick={() => insertSample('ruby')} variant="outline" size="sm">
+                Ruby
+              </Button>
+            </MagneticAttraction>
+            <MagneticAttraction strength="weak" range={50}>
+              <Button onClick={() => insertSample('c')} variant="outline" size="sm">
+                C
+              </Button>
+            </MagneticAttraction>
+            <MagneticAttraction strength="weak" range={50}>
+              <Button onClick={() => insertSample('shell')} variant="outline" size="sm">
+                Shell
+              </Button>
+            </MagneticAttraction>
+            <MagneticAttraction strength="weak" range={50}>
+              <Button onClick={() => insertSample('html')} variant="outline" size="sm">
+                HTML
+              </Button>
+            </MagneticAttraction>
+            <MagneticAttraction strength="weak" range={50}>
+              <Button onClick={() => insertSample('css')} variant="outline" size="sm">
+                CSS
+              </Button>
+            </MagneticAttraction>
+            <MagneticAttraction strength="weak" range={50}>
+              <Button onClick={() => insertSample('json')} variant="outline" size="sm">
+                JSON
+              </Button>
+            </MagneticAttraction>
           </div>
         </div>
       </div>
 
       {inputCode && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {t('codeHighlighter.result.highlightedCode').replace('{language}', getDisplayLanguage())}
-            </h3>
-            <Button onClick={handleCopy} variant="outline" size="sm">
-              {isCopied ? t('codeHighlighter.button.copied') : t('codeHighlighter.button.copy')}
-            </Button>
-          </div>
+        <HologramProjection isActive={!!inputCode} glitchIntensity="medium">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-cyan-300">
+                {t('codeHighlighter.result.highlightedCode').replace('{language}', getDisplayLanguage())}
+              </h3>
+              <MagneticAttraction strength="medium" range={80}>
+                <Button onClick={handleCopy} variant="outline" size="sm" className="border-cyan-400 text-cyan-300 hover:bg-cyan-400 hover:text-black">
+                  {isCopied ? t('codeHighlighter.button.copied') : t('codeHighlighter.button.copy')}
+                </Button>
+              </MagneticAttraction>
+            </div>
 
-          <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
-            <SyntaxHighlighter
-              language={getDisplayLanguage()}
-              style={theme === 'dark' ? vscDarkPlus : vs}
-              showLineNumbers={true}
-              customStyle={{
-                margin: 0,
-                fontSize: '14px',
-                background: 'transparent'
-              }}
-            >
-              {inputCode}
-            </SyntaxHighlighter>
-          </div>
+            <div className="border border-cyan-400 rounded-lg overflow-hidden bg-black bg-opacity-80">
+              <SyntaxHighlighter
+                language={getDisplayLanguage()}
+                style={{
+                  ...vscDarkPlus,
+                  'code[class*="language-"]': {
+                    ...vscDarkPlus['code[class*="language-"]'],
+                    color: '#00ffff',
+                    textShadow: '0 0 5px #00ffff'
+                  },
+                  'pre[class*="language-"]': {
+                    ...vscDarkPlus['pre[class*="language-"]'],
+                    background: 'transparent'
+                  }
+                }}
+                showLineNumbers={true}
+                customStyle={{
+                  margin: 0,
+                  fontSize: '14px',
+                  background: 'transparent',
+                  color: '#00ffff'
+                }}
+              >
+                {inputCode}
+              </SyntaxHighlighter>
+            </div>
 
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            <p><strong>{t('codeHighlighter.features.supportedLanguagesTitle')}</strong> {t('codeHighlighter.features.supportedLanguages')}</p>
-            <p><strong>{t('codeHighlighter.features.autoDetectionTitle')}</strong> {t('codeHighlighter.features.autoDetection')}</p>
-            <p><strong>{t('codeHighlighter.features.manualSelectionTitle')}</strong> {t('codeHighlighter.features.manualSelection')}</p>
+            <div className="text-sm text-cyan-400">
+              <p><strong className="text-cyan-300">{t('codeHighlighter.features.supportedLanguagesTitle')}</strong> {t('codeHighlighter.features.supportedLanguages')}</p>
+              <p><strong className="text-cyan-300">{t('codeHighlighter.features.autoDetectionTitle')}</strong> {t('codeHighlighter.features.autoDetection')}</p>
+              <p><strong className="text-cyan-300">{t('codeHighlighter.features.manualSelectionTitle')}</strong> {t('codeHighlighter.features.manualSelection')}</p>
+            </div>
           </div>
-        </div>
+        </HologramProjection>
       )}
     </div>
   );

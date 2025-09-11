@@ -3,6 +3,8 @@ import { AlertTriangle, Check, Copy, RotateCcw } from 'lucide-react';
 import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { HologramProjection } from '../Effects/HologramProjection';
+import { MagneticAttraction } from '../Effects/MagneticAttraction';
 
 export function JSONFormatter() {
   const [inputJSON, setInputJSON] = useState('');
@@ -152,12 +154,16 @@ export function JSONFormatter() {
         </div>
 
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={minifyJSON} disabled={!isValid}>
-            {t('jsonFormatter.button.compress')}
-          </Button>
-          <Button size="sm" variant="outline" onClick={insertSample}>
-            {t('jsonFormatter.button.insertSample')}
-          </Button>
+          <MagneticAttraction strength="medium" range={80}>
+            <Button size="sm" variant="outline" onClick={minifyJSON} disabled={!isValid}>
+              {t('jsonFormatter.button.compress')}
+            </Button>
+          </MagneticAttraction>
+          <MagneticAttraction strength="medium" range={80}>
+            <Button size="sm" variant="outline" onClick={insertSample}>
+              {t('jsonFormatter.button.insertSample')}
+            </Button>
+          </MagneticAttraction>
         </div>
       </div>
 
@@ -198,81 +204,98 @@ export function JSONFormatter() {
         )}
       </div>
 
-      {/* 出力エリア */}
+      {/* 出力エリア - ホログラム表示 */}
       <div>
         <label htmlFor="output-json" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           {t('jsonFormatter.output.label')}
         </label>
-        <textarea
-          id="output-json"
-          value={outputJSON}
-          readOnly
-          className="w-full h-48 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-600 text-gray-900 dark:text-white resize-y font-mono text-sm"
-        />
+        {outputJSON ? (
+          <HologramProjection isActive={!!outputJSON} glitchIntensity="low">
+            <textarea
+              id="output-json"
+              value={outputJSON}
+              readOnly
+              className="w-full h-48 px-3 py-2 border border-cyan-400 rounded-md shadow-sm bg-black text-cyan-100 resize-y font-mono text-sm"
+            />
+          </HologramProjection>
+        ) : (
+          <textarea
+            id="output-json"
+            value={outputJSON}
+            readOnly
+            className="w-full h-48 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-gray-50 dark:bg-gray-600 text-gray-900 dark:text-white resize-y font-mono text-sm"
+          />
+        )}
       </div>
 
       {/* アクションボタン */}
       <div className="flex gap-3">
-        <Button 
-          onClick={handleCopy} 
-          disabled={!outputJSON}
-          className="flex items-center gap-2"
-        >
-          {isCopied ? (
-            <><Check className="w-4 h-4 mr-1" /> {t('jsonFormatter.copied')}</>
-          ) : (
-            <><Copy className="w-4 h-4 mr-1" /> {t('jsonFormatter.button.copyResult')}</>
-          )}
-        </Button>
-        <Button 
-          variant="outline" 
-          onClick={handleReset}
-          disabled={!inputJSON}
-        >
-          <RotateCcw className="w-4 h-4 mr-1" />
-          {t('jsonFormatter.button.reset')}
-        </Button>
+        <MagneticAttraction strength="medium" range={100}>
+          <Button 
+            onClick={handleCopy} 
+            disabled={!outputJSON}
+            className="flex items-center gap-2"
+          >
+            {isCopied ? (
+              <><Check className="w-4 h-4 mr-1" /> {t('jsonFormatter.copied')}</>
+            ) : (
+              <><Copy className="w-4 h-4 mr-1" /> {t('jsonFormatter.button.copyResult')}</>
+            )}
+          </Button>
+        </MagneticAttraction>
+        <MagneticAttraction strength="medium" range={80}>
+          <Button 
+            variant="outline" 
+            onClick={handleReset}
+            disabled={!inputJSON}
+          >
+            <RotateCcw className="w-4 h-4 mr-1" />
+            {t('jsonFormatter.button.reset')}
+          </Button>
+        </MagneticAttraction>
       </div>
 
-      {/* JSON統計情報 */}
+      {/* JSON統計情報 - ホログラム表示 */}
       {stats && (
-        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t('jsonFormatter.stats.title')}</h3>
+        <HologramProjection isActive={!!stats} glitchIntensity="low">
+          <div className="bg-gray-900 bg-opacity-80 border border-cyan-400 rounded-lg p-4">
+            <h3 className="text-sm font-medium text-cyan-300 mb-3">{t('jsonFormatter.stats.title')}</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
-              <div className="font-semibold text-gray-900 dark:text-white">{stats.size}B</div>
-              <div className="text-gray-500 dark:text-gray-400">{t('jsonFormatter.stats.originalSize')}</div>
+              <div className="font-semibold text-cyan-100">{stats.size}B</div>
+              <div className="text-cyan-400">{t('jsonFormatter.stats.originalSize')}</div>
             </div>
             <div>
-              <div className="font-semibold text-gray-900 dark:text-white">{stats.formattedSize}B</div>
-              <div className="text-gray-500 dark:text-gray-400">{t('jsonFormatter.stats.formattedSize')}</div>
+              <div className="font-semibold text-cyan-100">{stats.formattedSize}B</div>
+              <div className="text-cyan-400">{t('jsonFormatter.stats.formattedSize')}</div>
             </div>
             <div>
-              <div className="font-semibold text-gray-900 dark:text-white">{stats.objects}</div>
-              <div className="text-gray-500 dark:text-gray-400">{t('jsonFormatter.stats.objects')}</div>
+              <div className="font-semibold text-cyan-100">{stats.objects}</div>
+              <div className="text-cyan-400">{t('jsonFormatter.stats.objects')}</div>
             </div>
             <div>
-              <div className="font-semibold text-gray-900 dark:text-white">{stats.arrays}</div>
-              <div className="text-gray-500 dark:text-gray-400">{t('jsonFormatter.stats.arrays')}</div>
+              <div className="font-semibold text-cyan-100">{stats.arrays}</div>
+              <div className="text-cyan-400">{t('jsonFormatter.stats.arrays')}</div>
             </div>
             <div>
-              <div className="font-semibold text-gray-900 dark:text-white">{stats.keys}</div>
-              <div className="text-gray-500 dark:text-gray-400">{t('jsonFormatter.stats.keys')}</div>
+              <div className="font-semibold text-cyan-100">{stats.keys}</div>
+              <div className="text-cyan-400">{t('jsonFormatter.stats.keys')}</div>
             </div>
             <div>
-              <div className="font-semibold text-gray-900 dark:text-white">{stats.strings}</div>
-              <div className="text-gray-500 dark:text-gray-400">{t('jsonFormatter.stats.strings')}</div>
+              <div className="font-semibold text-cyan-100">{stats.strings}</div>
+              <div className="text-cyan-400">{t('jsonFormatter.stats.strings')}</div>
             </div>
             <div>
-              <div className="font-semibold text-gray-900 dark:text-white">{stats.numbers}</div>
-              <div className="text-gray-500 dark:text-gray-400">{t('jsonFormatter.stats.numbers')}</div>
+              <div className="font-semibold text-cyan-100">{stats.numbers}</div>
+              <div className="text-cyan-400">{t('jsonFormatter.stats.numbers')}</div>
             </div>
             <div>
-              <div className="font-semibold text-gray-900 dark:text-white">{stats.booleans}</div>
-              <div className="text-gray-500 dark:text-gray-400">{t('jsonFormatter.stats.booleans')}</div>
+              <div className="font-semibold text-cyan-100">{stats.booleans}</div>
+              <div className="text-cyan-400">{t('jsonFormatter.stats.booleans')}</div>
             </div>
           </div>
         </div>
+        </HologramProjection>
       )}
 
       {/* 使用例 */}

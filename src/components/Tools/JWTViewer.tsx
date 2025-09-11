@@ -4,6 +4,8 @@ import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ToolProps } from '../../types';
+import { HologramProjection } from '../Effects/HologramProjection';
+import { MagneticAttraction } from '../Effects/MagneticAttraction';
 
 interface JWTPayload {
   [key: string]: any;
@@ -24,7 +26,7 @@ export function JWTViewer({ onHistoryAdd }: ToolProps) {
   const { copyToClipboard } = useCopyToClipboard();
   const { t } = useLanguage();
 
-  // Base64URL デコード関数
+  // Base64URL デコード関数（UTF-8対応）
   const base64UrlDecode = (str: string): string => {
     // Base64URL を Base64 に変換
     let base64 = str.replace(/-/g, '+').replace(/_/g, '/');
@@ -33,7 +35,15 @@ export function JWTViewer({ onHistoryAdd }: ToolProps) {
       base64 += '=';
     }
     try {
-      return atob(base64);
+      const binaryString = atob(base64);
+      // バイナリ文字列をUint8Arrayに変換
+      const uint8Array = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        uint8Array[i] = binaryString.charCodeAt(i);
+      }
+      // UTF-8デコード
+      const decoder = new TextDecoder('utf-8');
+      return decoder.decode(uint8Array);
     } catch {
       throw new Error(t('jwtViewer.error.invalidBase64'));
     }
@@ -150,6 +160,8 @@ export function JWTViewer({ onHistoryAdd }: ToolProps) {
   };
 
   const insertSample = () => {
+    console.log('insertSample called'); // デバッグ用
+    
     // 現在時刻から1時間有効なサンプルJWTを動的生成
     const now = Math.floor(Date.now() / 1000);
     const oneHourLater = now + 3600; // 1時間後
@@ -161,31 +173,60 @@ export function JWTViewer({ onHistoryAdd }: ToolProps) {
     
     const payload = {
       sub: "1234567890",
-      name: "本田 太郎",
+      name: "田中太郎",
       iat: now,
       exp: oneHourLater,
       aud: "example-audience",
-      iss: "example-issuer",
+      iss: "example-issuer", 
       email: "tanaka@example.com",
       role: "user"
     };
     
-    // Base64URL エンコード
+    // より確実なBase64URL エンコード関数
     const base64UrlEncode = (obj: object) => {
-      return btoa(JSON.stringify(obj))
+      const jsonString = JSON.stringify(obj);
+      
+      // WebブラウザのWebCrypto APIを使う代わりに、確実な方法を使用
+      let base64String;
+      try {
+        // 最初にUTF-8バイトシーケンスを作成
+        const utf8Bytes = new TextEncoder().encode(jsonString);
+        
+        // Uint8ArrayをBase64文字列に変換
+        const binaryString = Array.from(utf8Bytes, byte => String.fromCharCode(byte)).join('');
+        base64String = btoa(binaryString);
+      } catch (e) {
+        // フォールバック: 元の方法
+        console.warn('Using fallback base64 encoding');
+        base64String = btoa(unescape(encodeURIComponent(jsonString)));
+      }
+      
+      // Base64からBase64URLに変換
+      return base64String
         .replace(/\+/g, '-')
         .replace(/\//g, '_')
         .replace(/=/g, '');
     };
     
-    const encodedHeader = base64UrlEncode(header);
-    const encodedPayload = base64UrlEncode(payload);
-    
-    // サンプルなので固定署名を使用（実際のJWTではシークレットキーで署名）
-    const signature = "qLdCiYpv5W7c5qzrPqBkTa7eT5PWrYhgBMl_v9Lc-Cs";
-    
-    const sampleJWT = `${encodedHeader}.${encodedPayload}.${signature}`;
-    setInputJWT(sampleJWT);
+    try {
+      const encodedHeader = base64UrlEncode(header);
+      const encodedPayload = base64UrlEncode(payload);
+      
+      // サンプルなので固定署名を使用（実際のJWTではシークレットキーで署名）
+      const signature = "qLdCiYpv5W7c5qzrPqBkTa7eT5PWrYhgBMl_v9Lc-Cs";
+      
+      const sampleJWT = `${encodedHeader}.${encodedPayload}.${signature}`;
+      console.log('Generated JWT:', sampleJWT); // デバッグ用
+      console.log('Encoded header:', encodedHeader);
+      console.log('Encoded payload:', encodedPayload);
+      
+      setInputJWT(sampleJWT);
+    } catch (error) {
+      console.error('Error generating sample JWT:', error);
+      // エラーの場合は固定のサンプルを使用
+      const fallbackJWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjE3MzU3MDU2MDAsImF1ZCI6InNhbXBsZS1hdWRpZW5jZSIsImlzcyI6InNhbXBsZS1pc3N1ZXIiLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJyb2xlIjoidXNlciJ9.4Adcj3UFYzPUVaVF43FmMab6RlaQD8A9V8wPzzNFbLI";
+      setInputJWT(fallbackJWT);
+    }
   };
 
   const expStatus = decodedJWT?.payload?.exp ? getExpirationStatus(decodedJWT.payload.exp) : null;
@@ -195,9 +236,11 @@ export function JWTViewer({ onHistoryAdd }: ToolProps) {
       {/* サンプル挿入 */}
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('jwtViewer.title')}</h3>
-        <Button size="sm" variant="outline" onClick={insertSample}>
-          {t('jwtViewer.insertSample')}
-        </Button>
+        <MagneticAttraction strength="medium" range={80}>
+          <Button size="sm" variant="outline" onClick={insertSample}>
+            {t('jwtViewer.insertSample')}
+          </Button>
+        </MagneticAttraction>
       </div>
 
       {/* 入力エリア */}
@@ -227,9 +270,10 @@ export function JWTViewer({ onHistoryAdd }: ToolProps) {
         </div>
       )}
 
-      {/* デコード結果 */}
+      {/* デコード結果 - ホログラム投影 */}
       {decodedJWT && decodedJWT.isValid && (
-        <div className="space-y-4">
+        <HologramProjection isActive={true} glitchIntensity="medium">
+          <div className="space-y-4">
           {/* 期限ステータス */}
           {expStatus && (
             <div className={`p-3 rounded-md border ${
@@ -247,89 +291,94 @@ export function JWTViewer({ onHistoryAdd }: ToolProps) {
           )}
 
           {/* ヘッダー */}
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+          <div className="bg-gray-900 bg-opacity-80 border border-cyan-400 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('jwtViewer.header.title')}</h3>
-              <Button size="sm" variant="outline" onClick={handleCopyHeader}>
-                <Copy className="w-4 h-4 mr-1" />
-                {t('common.copy')}
-              </Button>
+              <h3 className="text-lg font-medium text-cyan-300">{t('jwtViewer.header.title')}</h3>
+              <MagneticAttraction strength="medium" range={80}>
+                <Button size="sm" variant="outline" onClick={handleCopyHeader} className="border-cyan-400 text-cyan-300 hover:bg-cyan-400 hover:text-black">
+                  <Copy className="w-4 h-4 mr-1" />
+                  {t('common.copy')}
+                </Button>
+              </MagneticAttraction>
             </div>
-            <pre className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md p-3 text-sm font-mono overflow-x-auto text-gray-900 dark:text-white">
+            <pre className="bg-black border border-cyan-400 rounded-md p-3 text-sm font-mono overflow-x-auto text-cyan-100">
               {JSON.stringify(decodedJWT.header, null, 2)}
             </pre>
             
             {/* ヘッダー情報の説明 */}
-            <div className="mt-3 text-sm text-gray-600 dark:text-gray-400">
+            <div className="mt-3 text-sm text-cyan-400">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {decodedJWT.header.alg && (
-                  <div><strong>{t('jwtViewer.algorithm')}:</strong> {decodedJWT.header.alg}</div>
+                  <div><strong className="text-cyan-300">{t('jwtViewer.algorithm')}:</strong> {decodedJWT.header.alg}</div>
                 )}
                 {decodedJWT.header.typ && (
-                  <div><strong>{t('jwtViewer.type')}:</strong> {decodedJWT.header.typ}</div>
+                  <div><strong className="text-cyan-300">{t('jwtViewer.type')}:</strong> {decodedJWT.header.typ}</div>
                 )}
                 {decodedJWT.header.kid && (
-                  <div><strong>{t('jwtViewer.keyId')}:</strong> {decodedJWT.header.kid}</div>
+                  <div><strong className="text-cyan-300">{t('jwtViewer.keyId')}:</strong> {decodedJWT.header.kid}</div>
                 )}
               </div>
             </div>
           </div>
 
           {/* ペイロード */}
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+          <div className="bg-gray-900 bg-opacity-80 border border-cyan-400 rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">{t('jwtViewer.payload.title')}</h3>
-              <Button size="sm" variant="outline" onClick={handleCopyPayload}>
-                <Copy className="w-4 h-4 mr-1" />
-                {t('common.copy')}
-              </Button>
+              <h3 className="text-lg font-medium text-cyan-300">{t('jwtViewer.payload.title')}</h3>
+              <MagneticAttraction strength="medium" range={80}>
+                <Button size="sm" variant="outline" onClick={handleCopyPayload} className="border-cyan-400 text-cyan-300 hover:bg-cyan-400 hover:text-black">
+                  <Copy className="w-4 h-4 mr-1" />
+                  {t('common.copy')}
+                </Button>
+              </MagneticAttraction>
             </div>
-            <pre className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md p-3 text-sm font-mono overflow-x-auto text-gray-900 dark:text-white">
+            <pre className="bg-black border border-cyan-400 rounded-md p-3 text-sm font-mono overflow-x-auto text-cyan-100">
               {JSON.stringify(decodedJWT.payload, null, 2)}
             </pre>
 
             {/* 標準クレーム情報 */}
-            <div className="mt-3 text-sm text-gray-600 dark:text-gray-400">
-              <h4 className="font-medium text-gray-700 dark:text-gray-300 mb-2">{t('jwtViewer.claims.title')}</h4>
+            <div className="mt-3 text-sm text-cyan-400">
+              <h4 className="font-medium text-cyan-300 mb-2">{t('jwtViewer.claims.title')}</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {decodedJWT.payload.iss && (
-                  <div><strong>{t('jwtViewer.claims.issuer')}:</strong> {decodedJWT.payload.iss}</div>
+                  <div><strong className="text-cyan-300">{t('jwtViewer.claims.issuer')}:</strong> {decodedJWT.payload.iss}</div>
                 )}
                 {decodedJWT.payload.sub && (
-                  <div><strong>{t('jwtViewer.claims.subject')}:</strong> {decodedJWT.payload.sub}</div>
+                  <div><strong className="text-cyan-300">{t('jwtViewer.claims.subject')}:</strong> {decodedJWT.payload.sub}</div>
                 )}
                 {decodedJWT.payload.aud && (
-                  <div><strong>{t('jwtViewer.claims.audience')}:</strong> {Array.isArray(decodedJWT.payload.aud) ? decodedJWT.payload.aud.join(', ') : decodedJWT.payload.aud}</div>
+                  <div><strong className="text-cyan-300">{t('jwtViewer.claims.audience')}:</strong> {Array.isArray(decodedJWT.payload.aud) ? decodedJWT.payload.aud.join(', ') : decodedJWT.payload.aud}</div>
                 )}
                 {decodedJWT.payload.exp && (
-                  <div><strong>{t('jwtViewer.claims.expiration')}:</strong> {formatTimestamp(decodedJWT.payload.exp)}</div>
+                  <div><strong className="text-cyan-300">{t('jwtViewer.claims.expiration')}:</strong> {formatTimestamp(decodedJWT.payload.exp)}</div>
                 )}
                 {decodedJWT.payload.nbf && (
-                  <div><strong>{t('jwtViewer.claims.notBefore')}:</strong> {formatTimestamp(decodedJWT.payload.nbf)}</div>
+                  <div><strong className="text-cyan-300">{t('jwtViewer.claims.notBefore')}:</strong> {formatTimestamp(decodedJWT.payload.nbf)}</div>
                 )}
                 {decodedJWT.payload.iat && (
-                  <div><strong>{t('jwtViewer.claims.issuedAt')}:</strong> {formatTimestamp(decodedJWT.payload.iat)}</div>
+                  <div><strong className="text-cyan-300">{t('jwtViewer.claims.issuedAt')}:</strong> {formatTimestamp(decodedJWT.payload.iat)}</div>
                 )}
                 {decodedJWT.payload.jti && (
-                  <div><strong>{t('jwtViewer.claims.jwtId')}:</strong> {decodedJWT.payload.jti}</div>
+                  <div><strong className="text-cyan-300">{t('jwtViewer.claims.jwtId')}:</strong> {decodedJWT.payload.jti}</div>
                 )}
               </div>
             </div>
           </div>
 
           {/* シグネチャ */}
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-3">{t('jwtViewer.signature.title')}</h3>
-            <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md p-3">
-              <code className="text-sm font-mono text-gray-900 dark:text-white break-all">
+          <div className="bg-gray-900 bg-opacity-80 border border-cyan-400 rounded-lg p-4">
+            <h3 className="text-lg font-medium text-cyan-300 mb-3">{t('jwtViewer.signature.title')}</h3>
+            <div className="bg-black border border-cyan-400 rounded-md p-3">
+              <code className="text-sm font-mono text-cyan-100 break-all">
                 {decodedJWT.signature}
               </code>
             </div>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              <AlertTriangle className="w-4 h-4 inline mr-1" /> {t('jwtViewer.signature.warning')}
+            <p className="mt-2 text-sm text-cyan-400">
+              <AlertTriangle className="w-4 h-4 inline mr-1 text-orange-400" /> {t('jwtViewer.signature.warning')}
             </p>
           </div>
         </div>
+        </HologramProjection>
       )}
 
       {/* 使用方法 */}
