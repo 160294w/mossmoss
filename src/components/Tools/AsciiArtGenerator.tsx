@@ -3,8 +3,6 @@ import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ToolProps } from '../../types';
-import { ParallelWorldShift } from '../Effects/ParallelWorldShift';
-import { MagneticAttraction } from '../Effects/MagneticAttraction';
 
 type AACharacter = {
   name: string;
@@ -503,12 +501,9 @@ export function AsciiArtGenerator({ onHistoryAdd }: ToolProps) {
     return asciiArts.filter(art => art.category === selectedCategory);
   };
 
-  const generateRandomArt = async () => {
+  const generateRandomArt = () => {
     const filteredArts = getFilteredArts();
     if (filteredArts.length === 0) return;
-    
-    // パラレルワールドシフトエフェクトの演出時間
-    await new Promise(resolve => setTimeout(resolve, 600));
     
     const randomIndex = Math.floor(Math.random() * filteredArts.length);
     const selectedAA = filteredArts[randomIndex];
@@ -564,17 +559,13 @@ export function AsciiArtGenerator({ onHistoryAdd }: ToolProps) {
           </div>
           
           <div className="flex gap-2 items-end">
-            <MagneticAttraction strength="strong" range={100}>
-              <Button onClick={generateRandomArt} className="whitespace-nowrap">
-                {t('asciiArtGenerator.generate')}
-              </Button>
-            </MagneticAttraction>
+            <Button onClick={generateRandomArt} className="whitespace-nowrap">
+              {t('asciiArtGenerator.generate')}
+            </Button>
             {selectedArt && (
-              <MagneticAttraction strength="medium" range={80}>
-                <Button onClick={handleCopy} variant="outline">
-                  {isCopied ? t('asciiArtGenerator.copied') : t('asciiArtGenerator.copy')}
-                </Button>
-              </MagneticAttraction>
+              <Button onClick={handleCopy} variant="outline">
+                {isCopied ? t('asciiArtGenerator.copied') : t('asciiArtGenerator.copy')}
+              </Button>
             )}
           </div>
         </div>
@@ -588,21 +579,19 @@ export function AsciiArtGenerator({ onHistoryAdd }: ToolProps) {
       </div>
 
       {selectedArt && (
-        <ParallelWorldShift trigger={!!selectedArt}>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                {t('asciiArtGenerator.result.title')}
-              </h3>
-            </div>
-
-            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-300 dark:border-gray-600">
-              <pre className="text-sm font-mono text-gray-900 dark:text-white whitespace-pre overflow-x-auto">
-{selectedArt}
-              </pre>
-            </div>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              {t('asciiArtGenerator.result.title')}
+            </h3>
           </div>
-        </ParallelWorldShift>
+
+          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg border border-gray-300 dark:border-gray-600">
+            <pre className="text-sm font-mono text-gray-900 dark:text-white whitespace-pre overflow-x-auto">
+{selectedArt}
+            </pre>
+          </div>
+        </div>
       )}
 
       <div className="space-y-4">
@@ -612,25 +601,24 @@ export function AsciiArtGenerator({ onHistoryAdd }: ToolProps) {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredArts.map((character, index) => (
-            <MagneticAttraction key={index} strength="weak" range={60}>
-              <div
-                className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
-                onClick={() => selectSpecificArt(character)}
-              >
-                <div className="font-medium text-gray-900 dark:text-white mb-1 text-sm">
-                  {character.name}
+            <div
+              key={index}
+              className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
+              onClick={() => selectSpecificArt(character)}
+            >
+              <div className="font-medium text-gray-900 dark:text-white mb-1 text-sm">
+                {character.name}
+              </div>
+              {character.description && (
+                <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                  {character.description}
                 </div>
-                {character.description && (
-                  <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                    {character.description}
-                  </div>
-                )}
-                <pre className="text-xs font-mono text-gray-700 dark:text-gray-300 whitespace-pre overflow-hidden">
+              )}
+              <pre className="text-xs font-mono text-gray-700 dark:text-gray-300 whitespace-pre overflow-hidden">
 {character.art.split('\n').slice(0, 3).join('\n')}
 {character.art.split('\n').length > 3 ? '...' : ''}
-                </pre>
-              </div>
-            </MagneticAttraction>
+              </pre>
+            </div>
           ))}
         </div>
       </div>
