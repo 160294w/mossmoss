@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { gsap } from 'gsap';
 import { 
   FileText, 
@@ -32,6 +32,7 @@ import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { Header } from './components/Layout/Header';
 import { ToolCard } from './components/ToolCard';
 import { ToolContainer } from './components/ToolContainer';
+import { CategoryTabs } from './components/CategoryTabs';
 import { Tool, HistoryItem } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { CharacterCount } from './components/Tools/CharacterCount';
@@ -61,187 +62,253 @@ import { CaseConverter } from './components/Tools/CaseConverter';
 import { CurlToCode } from './components/Tools/CurlToCode';
 import { useGSAP } from './hooks/useGSAP';
 
-// ツール定義（基本情報）
+// カテゴリ定義
+const categories = [
+  {
+    id: 'all',
+    nameKey: 'category.all',
+    icon: Hash,
+    color: 'gray'
+  },
+  {
+    id: 'text',
+    nameKey: 'category.text',
+    icon: FileText,
+    color: 'blue'
+  },
+  {
+    id: 'development',
+    nameKey: 'category.development',
+    icon: Code2,
+    color: 'green'
+  },
+  {
+    id: 'data',
+    nameKey: 'category.data',
+    icon: RefreshCw,
+    color: 'purple'
+  },
+  {
+    id: 'generator',
+    nameKey: 'category.generator',
+    icon: Dices,
+    color: 'orange'
+  },
+  {
+    id: 'utility',
+    nameKey: 'category.utility',
+    icon: Calculator,
+    color: 'indigo'
+  }
+];
+
+// ツール定義（基本情報）- カテゴリ追加
 const toolsConfig = [
   {
     id: 'character-count',
     nameKey: 'tool.characterCount.name',
     descriptionKey: 'tool.characterCount.description',
     icon: FileText,
-    component: CharacterCount
+    component: CharacterCount,
+    category: 'text'
   },
   {
     id: 'text-converter',
     nameKey: 'tool.textConverter.name',
     descriptionKey: 'tool.textConverter.description',
     icon: RefreshCw,
-    component: TextConverter
-  },
-  {
-    id: 'random-generator',
-    nameKey: 'tool.randomGenerator.name',
-    descriptionKey: 'tool.randomGenerator.description',
-    icon: Dices,
-    component: RandomGenerator
-  },
-  {
-    id: 'json-formatter',
-    nameKey: 'tool.jsonFormatter.name',
-    descriptionKey: 'tool.jsonFormatter.description',
-    icon: Code2,
-    component: JSONFormatter
-  },
-  {
-    id: 'qr-generator',
-    nameKey: 'tool.qrGenerator.name',
-    descriptionKey: 'tool.qrGenerator.description',
-    icon: QrCode,
-    component: QRGenerator
-  },
-  {
-    id: 'jwt-viewer',
-    nameKey: 'tool.jwtViewer.name',
-    descriptionKey: 'tool.jwtViewer.description',
-    icon: Key,
-    component: JWTViewer
-  },
-  {
-    id: 'base-converter',
-    nameKey: 'tool.baseConverter.name',
-    descriptionKey: 'tool.baseConverter.description',
-    icon: Binary,
-    component: BaseConverter
-  },
-  {
-    id: 'hash-generator',
-    nameKey: 'tool.hashGenerator.name',
-    descriptionKey: 'tool.hashGenerator.description',
-    icon: Hash,
-    component: HashGenerator
-  },
-  {
-    id: 'uuid-generator',
-    nameKey: 'tool.uuidGenerator.name',
-    descriptionKey: 'tool.uuidGenerator.description',
-    icon: Fingerprint,
-    component: UUIDGenerator
-  },
-  {
-    id: 'radix-converter',
-    nameKey: 'tool.radixConverter.name',
-    descriptionKey: 'tool.radixConverter.description',
-    icon: Calculator,
-    component: RadixConverter
-  },
-  {
-    id: 'markdown-converter',
-    nameKey: 'tool.markdownConverter.name',
-    descriptionKey: 'tool.markdownConverter.description',
-    icon: FileCode,
-    component: MarkdownConverter
+    component: TextConverter,
+    category: 'text'
   },
   {
     id: 'text-sorter',
     nameKey: 'tool.textSorter.name',
     descriptionKey: 'tool.textSorter.description',
     icon: ArrowUpDown,
-    component: TextSorter
-  },
-  {
-    id: 'code-highlighter',
-    nameKey: 'tool.codeHighlighter.name',
-    descriptionKey: 'tool.codeHighlighter.description',
-    icon: Highlighter,
-    component: CodeHighlighter
-  },
-  {
-    id: 'ascii-art-generator',
-    nameKey: 'tool.asciiArtGenerator.name',
-    descriptionKey: 'tool.asciiArtGenerator.description',
-    icon: Smile,
-    component: AsciiArtGenerator
-  },
-  {
-    id: 'yaml-json-converter',
-    nameKey: 'tool.yamlJsonConverter.name',
-    descriptionKey: 'tool.yamlJsonConverter.description',
-    icon: RotateCcw,
-    component: YamlJsonConverter
-  },
-  {
-    id: 'jq-explorer',
-    nameKey: 'tool.jqExplorer.name',
-    descriptionKey: 'tool.jqExplorer.description',
-    icon: Search,
-    component: JqExplorer
-  },
-  {
-    id: 'certificate-viewer',
-    nameKey: 'tool.certificateViewer.name',
-    descriptionKey: 'tool.certificateViewer.description',
-    icon: Shield,
-    component: CertificateViewer
-  },
-  {
-    id: 'color-preview',
-    nameKey: 'tool.colorPreview.name',
-    descriptionKey: 'tool.colorPreview.description',
-    icon: Palette,
-    component: ColorPreview
-  },
-  {
-    id: 'datetime-formatter',
-    nameKey: 'tool.datetimeFormatter.name',
-    descriptionKey: 'tool.datetimeFormatter.description',
-    icon: Clock,
-    component: DateTimeFormatter
-  },
-  {
-    id: 'cron-parser',
-    nameKey: 'tool.cronParser.name',
-    descriptionKey: 'tool.cronParser.description',
-    icon: Calendar,
-    component: CronParser
-  },
-  {
-    id: 'curl-converter',
-    nameKey: 'tool.curlConverter.name',
-    descriptionKey: 'tool.curlConverter.description',
-    icon: Terminal,
-    component: CurlConverter
-  },
-  {
-    id: 'html-escaper',
-    nameKey: 'tool.htmlEscaper.name',
-    descriptionKey: 'tool.htmlEscaper.description',
-    icon: AlertTriangle,
-    component: HtmlEscaper
-  },
-  {
-    id: 'json-log-viewer',
-    nameKey: 'tool.jsonLogViewer.name',
-    descriptionKey: 'tool.jsonLogViewer.description',
-    icon: ScrollText,
-    component: JsonLogViewer
+    component: TextSorter,
+    category: 'text'
   },
   {
     id: 'case-converter',
     nameKey: 'tool.caseConverter.name',
     descriptionKey: 'tool.caseConverter.description',
     icon: ArrowRightLeft,
-    component: CaseConverter
+    component: CaseConverter,
+    category: 'text'
+  },
+  {
+    id: 'json-formatter',
+    nameKey: 'tool.jsonFormatter.name',
+    descriptionKey: 'tool.jsonFormatter.description',
+    icon: Code2,
+    component: JSONFormatter,
+    category: 'development'
+  },
+  {
+    id: 'jwt-viewer',
+    nameKey: 'tool.jwtViewer.name',
+    descriptionKey: 'tool.jwtViewer.description',
+    icon: Key,
+    component: JWTViewer,
+    category: 'development'
+  },
+  {
+    id: 'code-highlighter',
+    nameKey: 'tool.codeHighlighter.name',
+    descriptionKey: 'tool.codeHighlighter.description',
+    icon: Highlighter,
+    component: CodeHighlighter,
+    category: 'development'
+  },
+  {
+    id: 'curl-converter',
+    nameKey: 'tool.curlConverter.name',
+    descriptionKey: 'tool.curlConverter.description',
+    icon: Terminal,
+    component: CurlConverter,
+    category: 'development'
   },
   {
     id: 'curl-to-code',
     nameKey: 'tool.curlToCode.name',
     descriptionKey: 'tool.curlToCode.description',
     icon: Code,
-    component: CurlToCode
+    component: CurlToCode,
+    category: 'development'
+  },
+  {
+    id: 'jq-explorer',
+    nameKey: 'tool.jqExplorer.name',
+    descriptionKey: 'tool.jqExplorer.description',
+    icon: Search,
+    component: JqExplorer,
+    category: 'development'
+  },
+  {
+    id: 'json-log-viewer',
+    nameKey: 'tool.jsonLogViewer.name',
+    descriptionKey: 'tool.jsonLogViewer.description',
+    icon: ScrollText,
+    component: JsonLogViewer,
+    category: 'development'
+  },
+  {
+    id: 'base-converter',
+    nameKey: 'tool.baseConverter.name',
+    descriptionKey: 'tool.baseConverter.description',
+    icon: Binary,
+    component: BaseConverter,
+    category: 'data'
+  },
+  {
+    id: 'radix-converter',
+    nameKey: 'tool.radixConverter.name',
+    descriptionKey: 'tool.radixConverter.description',
+    icon: Calculator,
+    component: RadixConverter,
+    category: 'data'
+  },
+  {
+    id: 'yaml-json-converter',
+    nameKey: 'tool.yamlJsonConverter.name',
+    descriptionKey: 'tool.yamlJsonConverter.description',
+    icon: RotateCcw,
+    component: YamlJsonConverter,
+    category: 'data'
+  },
+  {
+    id: 'hash-generator',
+    nameKey: 'tool.hashGenerator.name',
+    descriptionKey: 'tool.hashGenerator.description',
+    icon: Hash,
+    component: HashGenerator,
+    category: 'data'
+  },
+  {
+    id: 'random-generator',
+    nameKey: 'tool.randomGenerator.name',
+    descriptionKey: 'tool.randomGenerator.description',
+    icon: Dices,
+    component: RandomGenerator,
+    category: 'generator'
+  },
+  {
+    id: 'qr-generator',
+    nameKey: 'tool.qrGenerator.name',
+    descriptionKey: 'tool.qrGenerator.description',
+    icon: QrCode,
+    component: QRGenerator,
+    category: 'generator'
+  },
+  {
+    id: 'uuid-generator',
+    nameKey: 'tool.uuidGenerator.name',
+    descriptionKey: 'tool.uuidGenerator.description',
+    icon: Fingerprint,
+    component: UUIDGenerator,
+    category: 'generator'
+  },
+  {
+    id: 'ascii-art-generator',
+    nameKey: 'tool.asciiArtGenerator.name',
+    descriptionKey: 'tool.asciiArtGenerator.description',
+    icon: Smile,
+    component: AsciiArtGenerator,
+    category: 'generator'
+  },
+  {
+    id: 'markdown-converter',
+    nameKey: 'tool.markdownConverter.name',
+    descriptionKey: 'tool.markdownConverter.description',
+    icon: FileCode,
+    component: MarkdownConverter,
+    category: 'utility'
+  },
+  {
+    id: 'certificate-viewer',
+    nameKey: 'tool.certificateViewer.name',
+    descriptionKey: 'tool.certificateViewer.description',
+    icon: Shield,
+    component: CertificateViewer,
+    category: 'utility'
+  },
+  {
+    id: 'color-preview',
+    nameKey: 'tool.colorPreview.name',
+    descriptionKey: 'tool.colorPreview.description',
+    icon: Palette,
+    component: ColorPreview,
+    category: 'utility'
+  },
+  {
+    id: 'datetime-formatter',
+    nameKey: 'tool.datetimeFormatter.name',
+    descriptionKey: 'tool.datetimeFormatter.description',
+    icon: Clock,
+    component: DateTimeFormatter,
+    category: 'utility'
+  },
+  {
+    id: 'cron-parser',
+    nameKey: 'tool.cronParser.name',
+    descriptionKey: 'tool.cronParser.description',
+    icon: Calendar,
+    component: CronParser,
+    category: 'utility'
+  },
+  {
+    id: 'html-escaper',
+    nameKey: 'tool.htmlEscaper.name',
+    descriptionKey: 'tool.htmlEscaper.description',
+    icon: AlertTriangle,
+    component: HtmlEscaper,
+    category: 'utility'
   }
 ];
 
 function AppContent() {
   const [currentTool, setCurrentTool] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [, setHistory] = useLocalStorage<HistoryItem[]>('toolHistory', []);
   const { t } = useLanguage();
   
@@ -253,6 +320,26 @@ function AppContent() {
     icon: tool.icon,
     component: tool.component
   }));
+
+  // カテゴリでフィルタリング
+  const filteredTools = useMemo(() => {
+    if (selectedCategory === 'all') return tools;
+    return tools.filter(tool => {
+      const config = toolsConfig.find(t => t.id === tool.id);
+      return config?.category === selectedCategory;
+    });
+  }, [tools, selectedCategory]);
+
+  // カテゴリごとのツール数を計算
+  const toolCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: tools.length };
+    categories.forEach(category => {
+      if (category.id !== 'all') {
+        counts[category.id] = toolsConfig.filter(tool => tool.category === category.id).length;
+      }
+    });
+    return counts;
+  }, [tools.length]);
   
   // GSAPアニメーション
   const containerRef = useGSAP(() => {
@@ -353,9 +440,17 @@ function AppContent() {
                 {t('main.subtitle')}
               </p>
             </div>
+
+            {/* カテゴリタブ */}
+            <CategoryTabs
+              categories={categories}
+              selectedCategory={selectedCategory}
+              onCategoryChange={setSelectedCategory}
+              toolCounts={toolCounts}
+            />
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-              {tools.map(tool => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+              {filteredTools.map(tool => (
                 <div key={tool.id} className="tool-card">
                   <ToolCard
                     tool={tool}

@@ -18,6 +18,14 @@ const translations: Translations = {
     'main.title': 'tarutaru',
     'main.subtitle': 'nandemo tools',
     
+    // Categories
+    'category.all': 'すべて',
+    'category.text': 'テキスト処理',
+    'category.development': '開発者ツール',
+    'category.data': 'データ変換',
+    'category.generator': '生成ツール',
+    'category.utility': 'ユーティリティ',
+    
     // Tools
     'tool.characterCount.name': '文字数カウント',
     'tool.characterCount.description': 'テキストの文字数をリアルタイムで表示',
@@ -879,6 +887,14 @@ const translations: Translations = {
     // Main page
     'main.title': '',
     'main.subtitle': 'Handy tools in one place',
+
+    // Categories
+    'category.all': 'All',
+    'category.text': 'Text Processing',
+    'category.development': 'Development',
+    'category.data': 'Data Conversion',
+    'category.generator': 'Generator',
+    'category.utility': 'Utility',
     
     // Tools
     'tool.characterCount.name': 'Character Count',
