@@ -38,7 +38,7 @@ export function YamlJsonConverter({ onHistoryAdd }: ToolProps) {
 
   const handleConvert = () => {
     if (!inputText.trim()) {
-      setError(t('yamlJsonConverter.error.emptyInput'));
+      setError(t('yamlJsonConverter.error.empty'));
       setOutputText('');
       return;
     }
@@ -59,7 +59,7 @@ export function YamlJsonConverter({ onHistoryAdd }: ToolProps) {
       onHistoryAdd?.({
         toolId: 'yaml-json-converter',
         input: `${inputFormat.toUpperCase()} text`,
-        output: inputFormat === 'yaml' ? t('yamlJsonConverter.result.yamlToJson') : t('yamlJsonConverter.result.jsonToYaml')
+        output: inputFormat === 'yaml' ? t('yamlJsonConverter.historyOutput.yamlToJson') : t('yamlJsonConverter.historyOutput.jsonToYaml')
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '変換に失敗しました';
@@ -195,7 +195,7 @@ settings:
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                {t('yamlJsonConverter.input.formatLabel')}
+                {t('yamlJsonConverter.inputFormat.label')}
               </label>
               <select
                 value={inputFormat}
@@ -211,16 +211,16 @@ settings:
             </div>
             
             <Button onClick={handleFormatSwitch} variant="outline" size="sm">
-              {t('yamlJsonConverter.button.swapInputOutput')}
+              {t('yamlJsonConverter.button.swap')}
             </Button>
           </div>
 
           <div className="flex space-x-2">
             <Button onClick={insertSampleYaml} variant="outline" size="sm">
-              {t('yamlJsonConverter.sample.insertYaml')}
+              {t('yamlJsonConverter.button.yamlSample')}
             </Button>
             <Button onClick={insertSampleJson} variant="outline" size="sm">
-              {t('yamlJsonConverter.sample.insertJson')}
+              {t('yamlJsonConverter.button.jsonSample')}
             </Button>
             <Button onClick={clearAll} variant="outline" size="sm">
               {t('yamlJsonConverter.button.clear')}
@@ -230,12 +230,12 @@ settings:
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {inputFormat === 'yaml' ? t('yamlJsonConverter.input.yamlLabel') : t('yamlJsonConverter.input.jsonLabel')}
+            {inputFormat === 'yaml' ? t('yamlJsonConverter.input.yaml') : t('yamlJsonConverter.input.json')}
           </label>
           <textarea
             value={inputText}
             onChange={(e) => handleInputChange(e.target.value)}
-            placeholder={inputFormat === 'yaml' ? t('yamlJsonConverter.input.yamlPlaceholder') : t('yamlJsonConverter.input.jsonPlaceholder')}
+            placeholder={inputFormat === 'yaml' ? t('yamlJsonConverter.input.placeholder.yaml') : t('yamlJsonConverter.input.placeholder.json')}
             rows={12}
             className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono text-sm resize-y"
           />
@@ -244,14 +244,14 @@ settings:
         {error && (
           <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
             <p className="text-red-600 dark:text-red-400 text-sm">
-              <strong>{t('yamlJsonConverter.error.errorTitle')}</strong> {error}
+              <strong>{t('yamlJsonConverter.error.title')}</strong> {error}
             </p>
           </div>
         )}
 
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            {inputFormat === 'yaml' ? t('yamlJsonConverter.output.jsonLabel') : t('yamlJsonConverter.output.yamlLabel')}
+            {inputFormat === 'yaml' ? t('yamlJsonConverter.output.json') : t('yamlJsonConverter.output.yaml')}
           </h3>
           <div className="flex space-x-2">
             <Button onClick={handleConvert} variant="outline" size="sm">
@@ -271,7 +271,7 @@ settings:
         <textarea
           value={outputText}
           readOnly
-          placeholder={inputFormat === 'yaml' ? t('yamlJsonConverter.output.jsonPlaceholder') : t('yamlJsonConverter.output.yamlPlaceholder')}
+          placeholder={inputFormat === 'yaml' ? t('yamlJsonConverter.output.placeholder.json') : t('yamlJsonConverter.output.placeholder.yaml')}
           rows={12}
           className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white font-mono text-sm resize-y"
         />
@@ -279,11 +279,11 @@ settings:
         <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
           <p><strong>{t('yamlJsonConverter.features.title')}:</strong></p>
           <ul className="list-disc list-inside space-y-1">
-            <li>{t('yamlJsonConverter.features.yamlToJsonConversion')}</li>
-            <li>{t('yamlJsonConverter.features.jsonToYamlConversion')}</li>
-            <li>{t('yamlJsonConverter.features.realtimeConversion')}</li>
-            <li>{t('yamlJsonConverter.features.inputOutputSwap')}</li>
-            <li>{t('yamlJsonConverter.features.errorValidation')}</li>
+            <li>{t('yamlJsonConverter.features.yamlToJson')}</li>
+            <li>{t('yamlJsonConverter.features.jsonToYaml')}</li>
+            <li>{t('yamlJsonConverter.features.realtime')}</li>
+            <li>{t('yamlJsonConverter.features.swap')}</li>
+            <li>{t('yamlJsonConverter.features.errorDetection')}</li>
           </ul>
         </div>
       </div>
