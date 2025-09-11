@@ -11,7 +11,7 @@ const translations: Translations = {
   ja: {
 
     // Header
-    'app.title': 'mossmoss',
+    'app.title': 'tarutaru',
     'header.toggleTheme': 'テーマを切り替え',
     
     // Main page
@@ -881,7 +881,7 @@ const translations: Translations = {
   en: {
 
     // Header
-    'app.title': 'mossmoss',
+    'app.title': 'tarutaru',
     'header.toggleTheme': 'Toggle theme',
     
     // Main page
