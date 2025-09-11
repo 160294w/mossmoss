@@ -4,6 +4,8 @@ import { Button } from '../UI/Button';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ToolProps } from '../../types';
+import { ElementParallelShift } from '../Effects/ParallelWorldShift';
+import { MagneticAttraction } from '../Effects/MagneticAttraction';
 
 interface GeneratorOptions {
   length: number;
@@ -28,6 +30,7 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
   });
   const [generatedText, setGeneratedText] = useState('');
   const [generationHistory, setGenerationHistory] = useState<string[]>([]);
+  const [isShifting, setIsShifting] = useState(false);
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
   // 文字セット定義
@@ -77,9 +80,15 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
     return result;
   }, [options]);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
+    setIsShifting(true);
+    
+    // パラレルワールドシフトエフェクトの演出時間
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
     const newString = generateRandomString();
     setGeneratedText(newString);
+    setIsShifting(false);
     
     // 履歴に追加
     setGenerationHistory(prev => [newString, ...prev.slice(0, 4)]); // 最新5件まで
@@ -239,15 +248,18 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
 
       {/* 生成ボタン */}
       <div>
-        <Button onClick={handleGenerate} size="lg" className="w-full md:w-auto">
-          <Dices className="w-4 h-4 mr-1" />
-          {t('randomGenerator.generate')}
-        </Button>
+        <MagneticAttraction strength="strong" range={120}>
+          <Button onClick={handleGenerate} size="lg" className="w-full md:w-auto" disabled={isShifting}>
+            <Dices className="w-4 h-4 mr-1" />
+            {isShifting ? '並行世界から選択中...' : t('randomGenerator.generate')}
+          </Button>
+        </MagneticAttraction>
       </div>
 
-      {/* 結果表示 */}
+      {/* 結果表示 - パラレルワールドシフト */}
       {generatedText && (
-        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+        <ElementParallelShift trigger={!!generatedText}>
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             {t('randomGenerator.result.label')}
           </label>
@@ -258,21 +270,27 @@ export function RandomGenerator({ onHistoryAdd }: ToolProps) {
           </div>
           
           <div className="flex gap-3">
-            <Button 
-              onClick={handleCopy}
-              className="flex items-center gap-2"
-            >
-              {isCopied ? t('randomGenerator.copied') : t('randomGenerator.copy')}
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={handleGenerate}
-            >
-              <RefreshCw className="w-4 h-4 mr-1" />
-              {t('randomGenerator.regenerate')}
-            </Button>
+            <MagneticAttraction strength="medium" range={80}>
+              <Button 
+                onClick={handleCopy}
+                className="flex items-center gap-2"
+              >
+                {isCopied ? t('randomGenerator.copied') : t('randomGenerator.copy')}
+              </Button>
+            </MagneticAttraction>
+            <MagneticAttraction strength="medium" range={80}>
+              <Button 
+                variant="outline" 
+                onClick={handleGenerate}
+                disabled={isShifting}
+              >
+                <RefreshCw className="w-4 h-4 mr-1" />
+                {t('randomGenerator.regenerate')}
+              </Button>
+            </MagneticAttraction>
           </div>
         </div>
+        </ElementParallelShift>
       )}
 
       {/* 生成履歴 */}
