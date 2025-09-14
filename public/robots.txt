@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+
+# サイトマップの場所
+Sitemap: https://tarutaru.pages.dev/sitemap.xml
+
+# クロール頻度の調整
+Crawl-delay: 1
+
+# 主要な検索エンジンボット向けの設定
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
