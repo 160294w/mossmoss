@@ -5,6 +5,7 @@ export interface Tool {
   name: string;
   description: string;
   icon: LucideIcon;
+  iconColor?: string;
   component: React.ComponentType<ToolProps>;
 }
 

@@ -70,7 +70,7 @@ export function ToolCard({ tool, onClick }: ToolCardProps) {
       <Card className="text-center cursor-pointer h-48 flex flex-col justify-between">
         <div className="flex flex-col items-center flex-1">
           <div className="mb-4 flex justify-center">
-            <tool.icon size={48} className="text-blue-500 dark:text-blue-400" />
+            <tool.icon size={48} className={`${tool.iconColor || 'text-blue-500'} dark:opacity-90`} />
           </div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
             {tool.name}
