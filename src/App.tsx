@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { SEOHead } from './components/SEOHead';
 import { gsap } from 'gsap';
 import { 
   FileText, 
@@ -102,13 +103,14 @@ const categories = [
   }
 ];
 
-// ツール定義（基本情報）- カテゴリ追加
+// ツール定義（基本情報）- カテゴリ & アイコン色追加
 const toolsConfig = [
   {
     id: 'character-count',
     nameKey: 'tool.characterCount.name',
     descriptionKey: 'tool.characterCount.description',
     icon: FileText,
+    iconColor: 'text-blue-500',
     component: CharacterCount,
     category: 'text'
   },
@@ -117,6 +119,7 @@ const toolsConfig = [
     nameKey: 'tool.textConverter.name',
     descriptionKey: 'tool.textConverter.description',
     icon: RefreshCw,
+    iconColor: 'text-cyan-500',
     component: TextConverter,
     category: 'text'
   },
@@ -125,6 +128,7 @@ const toolsConfig = [
     nameKey: 'tool.textSorter.name',
     descriptionKey: 'tool.textSorter.description',
     icon: ArrowUpDown,
+    iconColor: 'text-sky-500',
     component: TextSorter,
     category: 'text'
   },
@@ -133,6 +137,7 @@ const toolsConfig = [
     nameKey: 'tool.caseConverter.name',
     descriptionKey: 'tool.caseConverter.description',
     icon: ArrowRightLeft,
+    iconColor: 'text-indigo-500',
     component: CaseConverter,
     category: 'text'
   },
@@ -141,6 +146,7 @@ const toolsConfig = [
     nameKey: 'tool.jsonFormatter.name',
     descriptionKey: 'tool.jsonFormatter.description',
     icon: Code2,
+    iconColor: 'text-green-500',
     component: JSONFormatter,
     category: 'development'
   },
@@ -149,6 +155,7 @@ const toolsConfig = [
     nameKey: 'tool.jwtViewer.name',
     descriptionKey: 'tool.jwtViewer.description',
     icon: Key,
+    iconColor: 'text-emerald-500',
     component: JWTViewer,
     category: 'development'
   },
@@ -157,6 +164,7 @@ const toolsConfig = [
     nameKey: 'tool.codeHighlighter.name',
     descriptionKey: 'tool.codeHighlighter.description',
     icon: Highlighter,
+    iconColor: 'text-lime-500',
     component: CodeHighlighter,
     category: 'development'
   },
@@ -165,6 +173,7 @@ const toolsConfig = [
     nameKey: 'tool.curlConverter.name',
     descriptionKey: 'tool.curlConverter.description',
     icon: Terminal,
+    iconColor: 'text-teal-500',
     component: CurlConverter,
     category: 'development'
   },
@@ -173,6 +182,7 @@ const toolsConfig = [
     nameKey: 'tool.curlToCode.name',
     descriptionKey: 'tool.curlToCode.description',
     icon: Code,
+    iconColor: 'text-slate-500',
     component: CurlToCode,
     category: 'development'
   },
@@ -181,6 +191,7 @@ const toolsConfig = [
     nameKey: 'tool.jqExplorer.name',
     descriptionKey: 'tool.jqExplorer.description',
     icon: Search,
+    iconColor: 'text-violet-500',
     component: JqExplorer,
     category: 'development'
   },
@@ -189,6 +200,7 @@ const toolsConfig = [
     nameKey: 'tool.jsonLogViewer.name',
     descriptionKey: 'tool.jsonLogViewer.description',
     icon: ScrollText,
+    iconColor: 'text-fuchsia-500',
     component: JsonLogViewer,
     category: 'development'
   },
@@ -197,6 +209,7 @@ const toolsConfig = [
     nameKey: 'tool.baseConverter.name',
     descriptionKey: 'tool.baseConverter.description',
     icon: Binary,
+    iconColor: 'text-purple-500',
     component: BaseConverter,
     category: 'data'
   },
@@ -205,6 +218,7 @@ const toolsConfig = [
     nameKey: 'tool.radixConverter.name',
     descriptionKey: 'tool.radixConverter.description',
     icon: Calculator,
+    iconColor: 'text-pink-500',
     component: RadixConverter,
     category: 'data'
   },
@@ -213,6 +227,7 @@ const toolsConfig = [
     nameKey: 'tool.yamlJsonConverter.name',
     descriptionKey: 'tool.yamlJsonConverter.description',
     icon: RotateCcw,
+    iconColor: 'text-rose-500',
     component: YamlJsonConverter,
     category: 'data'
   },
@@ -221,6 +236,7 @@ const toolsConfig = [
     nameKey: 'tool.hashGenerator.name',
     descriptionKey: 'tool.hashGenerator.description',
     icon: Hash,
+    iconColor: 'text-amber-500',
     component: HashGenerator,
     category: 'data'
   },
@@ -229,6 +245,7 @@ const toolsConfig = [
     nameKey: 'tool.randomGenerator.name',
     descriptionKey: 'tool.randomGenerator.description',
     icon: Dices,
+    iconColor: 'text-orange-500',
     component: RandomGenerator,
     category: 'generator'
   },
@@ -237,6 +254,7 @@ const toolsConfig = [
     nameKey: 'tool.qrGenerator.name',
     descriptionKey: 'tool.qrGenerator.description',
     icon: QrCode,
+    iconColor: 'text-yellow-500',
     component: QRGenerator,
     category: 'generator'
   },
@@ -245,6 +263,7 @@ const toolsConfig = [
     nameKey: 'tool.uuidGenerator.name',
     descriptionKey: 'tool.uuidGenerator.description',
     icon: Fingerprint,
+    iconColor: 'text-red-500',
     component: UUIDGenerator,
     category: 'generator'
   },
@@ -253,6 +272,7 @@ const toolsConfig = [
     nameKey: 'tool.asciiArtGenerator.name',
     descriptionKey: 'tool.asciiArtGenerator.description',
     icon: Smile,
+    iconColor: 'text-lime-600',
     component: AsciiArtGenerator,
     category: 'generator'
   },
@@ -261,6 +281,7 @@ const toolsConfig = [
     nameKey: 'tool.markdownConverter.name',
     descriptionKey: 'tool.markdownConverter.description',
     icon: FileCode,
+    iconColor: 'text-gray-600',
     component: MarkdownConverter,
     category: 'utility'
   },
@@ -269,6 +290,7 @@ const toolsConfig = [
     nameKey: 'tool.certificateViewer.name',
     descriptionKey: 'tool.certificateViewer.description',
     icon: Shield,
+    iconColor: 'text-green-600',
     component: CertificateViewer,
     category: 'utility'
   },
@@ -277,6 +299,7 @@ const toolsConfig = [
     nameKey: 'tool.colorPreview.name',
     descriptionKey: 'tool.colorPreview.description',
     icon: Palette,
+    iconColor: 'text-pink-600',
     component: ColorPreview,
     category: 'utility'
   },
@@ -285,6 +308,7 @@ const toolsConfig = [
     nameKey: 'tool.datetimeFormatter.name',
     descriptionKey: 'tool.datetimeFormatter.description',
     icon: Clock,
+    iconColor: 'text-blue-600',
     component: DateTimeFormatter,
     category: 'utility'
   },
@@ -293,6 +317,7 @@ const toolsConfig = [
     nameKey: 'tool.cronParser.name',
     descriptionKey: 'tool.cronParser.description',
     icon: Calendar,
+    iconColor: 'text-indigo-600',
     component: CronParser,
     category: 'utility'
   },
@@ -301,6 +326,7 @@ const toolsConfig = [
     nameKey: 'tool.htmlEscaper.name',
     descriptionKey: 'tool.htmlEscaper.description',
     icon: AlertTriangle,
+    iconColor: 'text-red-600',
     component: HtmlEscaper,
     category: 'utility'
   }
@@ -318,15 +344,27 @@ function AppContent() {
     name: t(tool.nameKey),
     description: t(tool.descriptionKey),
     icon: tool.icon,
+    iconColor: tool.iconColor,
     component: tool.component
   }));
 
-  // カテゴリでフィルタリング
+  // カテゴリでフィルタリング（元の順番を保持）
   const filteredTools = useMemo(() => {
-    if (selectedCategory === 'all') return tools;
-    return tools.filter(tool => {
-      const config = toolsConfig.find(t => t.id === tool.id);
-      return config?.category === selectedCategory;
+    let filtered: Tool[];
+    if (selectedCategory === 'all') {
+      filtered = tools;
+    } else {
+      filtered = tools.filter(tool => {
+        const config = toolsConfig.find(t => t.id === tool.id);
+        return config?.category === selectedCategory;
+      });
+    }
+    
+    // toolsConfig配列の順番通りにソート
+    return filtered.sort((a, b) => {
+      const indexA = toolsConfig.findIndex(t => t.id === a.id);
+      const indexB = toolsConfig.findIndex(t => t.id === b.id);
+      return indexA - indexB;
     });
   }, [tools, selectedCategory]);
 
@@ -419,6 +457,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      <SEOHead toolId={currentTool || undefined} />
       <Header />
       
       <main ref={containerRef} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
