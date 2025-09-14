@@ -26,7 +26,7 @@
 *準備中 - 実際のスクリーンショットをここに追加してください*
 
 ### ライブデモ
-*準備中 - デプロイ後のURLをここに追加してください*
+🌐 **[https://tarutaru.pages.dev](https://tarutaru.pages.dev)**
 
 ## 🛠️ 搭載ツール
 
@@ -173,8 +173,25 @@ npm run preview
 
 ### デプロイ
 
+Cloudflare Pagesを使用してデプロイしています。
+
+```bash
+# Cloudflareにログイン
 wrangler login
-wrangler pages deploy dist
+
+# プロジェクト「tarutaru」にデプロイ
+wrangler pages deploy dist --project-name=tarutaru
+
+# 現在のデプロイURL
+# https://tarutaru.pages.dev
+```
+
+**デプロイ設定：**
+- プロジェクト名: `tarutaru`  
+- ドメイン: `tarutaru.pages.dev`
+- プロダクションブランチ: `main`
+- ビルドコマンド: `npm run build`
+- 出力ディレクトリ: `dist`
 
 
 ### 型チェック・Lint
