@@ -6,7 +6,7 @@ import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { ToolProps } from '../../types';
 
-type SupportedLanguage = 'python' | 'ruby' | 'c' | 'shell' | 'go' | 'javascript' | 'typescript' | 'json' | 'html' | 'css' | 'auto';
+type SupportedLanguage = 'python' | 'ruby' | 'c' | 'shell' | 'go' | 'javascript' | 'typescript' | 'json' | 'html' | 'css' | 'diff' | 'terraform' | 'auto';
 
 const languageKeywords: Record<Exclude<SupportedLanguage, 'auto'>, string[]> = {
   python: ['def ', 'import ', 'from ', 'print(', 'if __name__', 'class ', 'self.', 'elif ', 'lambda '],
@@ -18,7 +18,9 @@ const languageKeywords: Record<Exclude<SupportedLanguage, 'auto'>, string[]> = {
   typescript: ['interface ', 'type ', ': string', ': number', 'export ', 'import ', '<T>', 'extends '],
   json: ['{"', '"}', '": "', '": [', '": {'],
   html: ['<html', '<head', '<body', '<div', '<p>', '<span', '<!DOCTYPE'],
-  css: ['{', '}', ':', ';', '.', '#', '@media', 'px', 'rem']
+  css: ['{', '}', ':', ';', '.', '#', '@media', 'px', 'rem'],
+  diff: ['--- ', '+++ ', '@@ ', 'diff --git', 'index ', '@@', '-', '+'],
+  terraform: ['Terraform will perform', 'Plan:', '# ', '+ ', '- ', '~ ', '-/+', 'resource "', 'data "', 'known after apply']
 };
 
 export function CodeHighlighter({ onHistoryAdd }: ToolProps) {
@@ -38,7 +40,7 @@ export function CodeHighlighter({ onHistoryAdd }: ToolProps) {
     
     const scores: Record<Exclude<SupportedLanguage, 'auto'>, number> = {
       python: 0, ruby: 0, c: 0, shell: 0, go: 0,
-      javascript: 0, typescript: 0, json: 0, html: 0, css: 0
+      javascript: 0, typescript: 0, json: 0, html: 0, css: 0, diff: 0, terraform: 0
     };
 
     // 各言語のキーワードをチェック
@@ -64,6 +66,23 @@ export function CodeHighlighter({ onHistoryAdd }: ToolProps) {
     }
     if (/\{\s*[\w-]+\s*:\s*[\w#.-]+\s*;\s*\}/.test(codeText)) {
       scores.css += 3;
+    }
+    // diff特別パターンチェック
+    if (codeText.includes('diff --git') || codeText.includes('--- ') || codeText.includes('+++ ')) {
+      scores.diff += 5;
+    }
+    if (codeLines.some(line => /^[-+@]/.test(line.trim()))) {
+      scores.diff += 4;
+    }
+    // terraform plan特別パターンチェック
+    if (codeText.includes('terraform will perform') || codeText.includes('plan:')) {
+      scores.terraform += 8;
+    }
+    if (codeText.includes('resource "') || codeText.includes('data "')) {
+      scores.terraform += 3;
+    }
+    if (codeLines.some(line => /^\s*[~+-]\s/.test(line) || /^\s*-\/\+/.test(line))) {
+      scores.terraform += 5;
     }
 
     // 最高スコアの言語を選択
@@ -321,7 +340,168 @@ const userService = new UserService('/api');`,
   .container {
     padding: 10px;
   }
-}`
+}`,
+
+      diff: `diff --git a/src/components/Button.tsx b/src/components/Button.tsx
+index 1234567..abcdefg 100644
+--- a/src/components/Button.tsx
++++ b/src/components/Button.tsx
+@@ -1,10 +1,15 @@
+ import React from 'react';
+-import { ButtonHTMLAttributes } from 'react';
++import { ButtonHTMLAttributes, forwardRef } from 'react';
++import { cn } from '../utils/cn';
+
+-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
++export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+   variant?: 'primary' | 'secondary' | 'outline';
+   size?: 'sm' | 'md' | 'lg';
++  loading?: boolean;
+ }
+
+-export const Button: React.FC<ButtonProps> = ({
++export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
+   variant = 'primary',
+   size = 'md',
++  loading = false,
+   className,
+   children,
+   ...props
+-}) => {
++}, ref) => {
+   return (
+-    <button className={\`btn btn-\${variant} btn-\${size} \${className}\`} {...props}>
++    <button
++      ref={ref}
++      disabled={loading || props.disabled}
++      className={cn(
++        'btn',
++        \`btn-\${variant}\`,
++        \`btn-\${size}\`,
++        loading && 'btn-loading',
++        className
++      )}
++      {...props}
++    >
++      {loading ? 'Loading...' : children}
+     </button>
+   );
+-};
++});
++
++Button.displayName = 'Button';`,
+
+      terraform: `Terraform used the selected providers to generate the following execution plan.
+Resource actions are indicated with the following symbols:
+  + create
+  - destroy
+  ~ update in-place
+-/+ destroy and then create replacement
+
+Terraform will perform the following actions:
+
+  # aws_instance.web will be created
+  + resource "aws_instance" "web" {
+      + ami                                  = "ami-0c94855ba95b798c7"
+      + arn                                  = (known after apply)
+      + associate_public_ip_address          = (known after apply)
+      + availability_zone                    = (known after apply)
+      + cpu_core_count                       = (known after apply)
+      + cpu_threads_per_core                 = (known after apply)
+      + disable_api_stop                     = (known after apply)
+      + disable_api_termination              = (known after apply)
+      + ebs_optimized                        = (known after apply)
+      + get_password_data                    = false
+      + host_id                              = (known after apply)
+      + id                                   = (known after apply)
+      + instance_initiated_shutdown_behavior = (known after apply)
+      + instance_state                       = (known after apply)
+      + instance_type                        = "t3.micro"
+      + ipv6_address_count                   = (known after apply)
+      + ipv6_addresses                       = (known after apply)
+      + key_name                             = (known after apply)
+      + monitoring                           = (known after apply)
+      + outpost_arn                          = (known after apply)
+      + password_data                        = (known after apply)
+      + placement_group                      = (known after apply)
+      + placement_partition_number           = (known after apply)
+      + primary_network_interface_id         = (known after apply)
+      + private_dns_name_options             = (known after apply)
+      + private_ip                           = (known after apply)
+      + public_dns                           = (known after apply)
+      + public_ip                            = (known after apply)
+      + secondary_private_ips                = (known after apply)
+      + security_groups                      = (known after apply)
+      + source_dest_check                    = true
+      + subnet_id                            = (known after apply)
+      + tags                                 = {
+          + "Environment" = "development"
+          + "Name"        = "WebServer"
+        }
+      + tags_all                             = {
+          + "Environment" = "development"
+          + "Name"        = "WebServer"
+        }
+      + tenancy                              = (known after apply)
+      + user_data                            = (known after apply)
+      + user_data_base64                     = (known after apply)
+      + user_data_replace_on_change          = false
+      + vpc_security_group_ids               = (known after apply)
+    }
+
+  # aws_security_group.web_sg will be replaced
+  # (requested replacement due to changes in argument "ingress")
+-/+ resource "aws_security_group" "web_sg" {
+      ~ arn                    = "arn:aws:ec2:us-west-2:123456789012:security-group/sg-0123456789abcdef0" -> (known after apply)
+      ~ id                     = "sg-0123456789012345" -> (known after apply)
+      ~ name                   = "web-sg-20240101123456789012345678" -> (known after apply)
+      ~ owner_id               = "123456789012" -> (known after apply)
+      + revoke_rules_on_delete = false
+        tags                   = {
+            "Environment" = "development"
+            "Name"        = "web-security-group"
+        }
+      ~ vpc_id                 = "vpc-0123456789abcdef0" -> (known after apply)
+
+      ~ ingress {
+          ~ cidr_blocks      = [
+              - "10.0.0.0/8",
+              + "0.0.0.0/0",
+            ]
+          ~ description      = "HTTP" -> "HTTP from anywhere"
+            from_port        = 80
+            protocol         = "tcp"
+            self             = false
+            to_port          = 80
+        }
+
+      + ingress {
+          + cidr_blocks      = [
+              + "0.0.0.0/0",
+            ]
+          + description      = "HTTPS"
+          + from_port        = 443
+          + protocol         = "tcp"
+          + self             = false
+          + to_port          = 443
+        }
+
+        egress {
+            cidr_blocks      = [
+                "0.0.0.0/0",
+            ]
+            description      = ""
+            from_port        = 0
+            ipv6_cidr_blocks = []
+            prefix_list_ids  = []
+            protocol         = "-1"
+            security_groups  = []
+            self             = false
+            to_port          = 0
+        }
+    }
+
+Plan: 2 to add, 0 to change, 1 to destroy.`
     };
 
     const sampleCode = samples[lang];
@@ -343,7 +523,9 @@ const userService = new UserService('/api');`,
     { value: 'typescript', label: 'TypeScript' },
     { value: 'json', label: 'JSON' },
     { value: 'html', label: 'HTML' },
-    { value: 'css', label: 'CSS' }
+    { value: 'css', label: 'CSS' },
+    { value: 'diff', label: 'Diff' },
+    { value: 'terraform', label: 'Terraform Plan' }
   ];
 
   return (
@@ -439,6 +621,12 @@ const userService = new UserService('/api');`,
             <Button onClick={() => insertSample('json')} variant="outline" size="sm">
               JSON
             </Button>
+            <Button onClick={() => insertSample('diff')} variant="outline" size="sm">
+              Diff
+            </Button>
+            <Button onClick={() => insertSample('terraform')} variant="outline" size="sm">
+              Terraform
+            </Button>
           </div>
         </div>
       </div>
@@ -463,6 +651,107 @@ const userService = new UserService('/api');`,
                 margin: 0,
                 fontSize: '14px',
                 background: 'transparent'
+              }}
+              lineProps={(lineNumber) => {
+                if (getDisplayLanguage() === 'diff') {
+                  const line = inputCode.split('\n')[lineNumber - 1] || '';
+                  if (line.startsWith('+')) {
+                    return {
+                      style: {
+                        backgroundColor: theme === 'dark' ? 'rgba(46, 160, 67, 0.15)' : 'rgba(209, 250, 229, 0.8)',
+                        color: theme === 'dark' ? '#7dd87d' : '#22543d',
+                        display: 'block',
+                        margin: '0',
+                        padding: '0 1rem'
+                      }
+                    };
+                  } else if (line.startsWith('-')) {
+                    return {
+                      style: {
+                        backgroundColor: theme === 'dark' ? 'rgba(248, 81, 73, 0.15)' : 'rgba(254, 226, 226, 0.8)',
+                        color: theme === 'dark' ? '#ff7979' : '#742a2a',
+                        display: 'block',
+                        margin: '0',
+                        padding: '0 1rem'
+                      }
+                    };
+                  } else if (line.startsWith('@@')) {
+                    return {
+                      style: {
+                        backgroundColor: theme === 'dark' ? 'rgba(130, 170, 255, 0.15)' : 'rgba(237, 242, 247, 0.8)',
+                        color: theme === 'dark' ? '#82aaff' : '#4a5568',
+                        display: 'block',
+                        margin: '0',
+                        padding: '0 1rem',
+                        fontWeight: 'bold'
+                      }
+                    };
+                  }
+                } else if (getDisplayLanguage() === 'terraform') {
+                  const line = inputCode.split('\n')[lineNumber - 1] || '';
+                  const trimmedLine = line.trim();
+
+                  if (trimmedLine.startsWith('+ ')) {
+                    return {
+                      style: {
+                        backgroundColor: theme === 'dark' ? 'rgba(46, 160, 67, 0.15)' : 'rgba(209, 250, 229, 0.8)',
+                        color: theme === 'dark' ? '#7dd87d' : '#22543d',
+                        display: 'block',
+                        margin: '0',
+                        padding: '0 1rem'
+                      }
+                    };
+                  } else if (trimmedLine.startsWith('- ')) {
+                    return {
+                      style: {
+                        backgroundColor: theme === 'dark' ? 'rgba(248, 81, 73, 0.15)' : 'rgba(254, 226, 226, 0.8)',
+                        color: theme === 'dark' ? '#ff7979' : '#742a2a',
+                        display: 'block',
+                        margin: '0',
+                        padding: '0 1rem'
+                      }
+                    };
+                  } else if (trimmedLine.startsWith('~ ')) {
+                    return {
+                      style: {
+                        backgroundColor: theme === 'dark' ? 'rgba(255, 193, 7, 0.15)' : 'rgba(255, 243, 176, 0.8)',
+                        color: theme === 'dark' ? '#ffc107' : '#975a16',
+                        display: 'block',
+                        margin: '0',
+                        padding: '0 1rem'
+                      }
+                    };
+                  } else if (trimmedLine.startsWith('-/+ ')) {
+                    return {
+                      style: {
+                        backgroundColor: theme === 'dark' ? 'rgba(255, 87, 34, 0.15)' : 'rgba(255, 224, 178, 0.8)',
+                        color: theme === 'dark' ? '#ff5722' : '#bf360c',
+                        display: 'block',
+                        margin: '0',
+                        padding: '0 1rem',
+                        fontWeight: 'bold'
+                      }
+                    };
+                  } else if (trimmedLine.startsWith('#')) {
+                    return {
+                      style: {
+                        backgroundColor: theme === 'dark' ? 'rgba(130, 170, 255, 0.15)' : 'rgba(237, 242, 247, 0.8)',
+                        color: theme === 'dark' ? '#82aaff' : '#4a5568',
+                        display: 'block',
+                        margin: '0',
+                        padding: '0 1rem',
+                        fontStyle: 'italic'
+                      }
+                    };
+                  }
+                }
+                return {
+                  style: {
+                    display: 'block',
+                    margin: '0',
+                    padding: '0 1rem'
+                  }
+                };
               }}
             >
               {inputCode}
