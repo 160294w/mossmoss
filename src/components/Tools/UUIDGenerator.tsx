@@ -7,19 +7,89 @@ import { ToolProps } from '../../types';
 
 export function UUIDGenerator({ onHistoryAdd }: ToolProps) {
   const { t } = useLanguage();
-  const [version, setVersion] = useState<'v4' | 'v1'>('v4');
+  const [version, setVersion] = useState<'v4' | 'v1' | 'v7' | 'ulid'>('v4');
   const [quantity, setQuantity] = useState(1);
   const [uuidList, setUuidList] = useState<string[]>([]);
   const { copyToClipboard, isCopied } = useCopyToClipboard();
 
+  // ULID生成用のBase32エンコード文字セット (Crockford's Base32)
+  const ULID_ENCODING = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+
+  const generateULID = (): string => {
+    const timestamp = Date.now();
+    const randomBytes = new Uint8Array(10);
+    crypto.getRandomValues(randomBytes);
+
+    // タイムスタンプ部分（48bit = 10文字のBase32）
+    let timestampStr = '';
+    let time = timestamp;
+    for (let i = 9; i >= 0; i--) {
+      timestampStr = ULID_ENCODING[time & 31] + timestampStr;
+      time = Math.floor(time / 32);
+    }
+
+    // ランダム部分（80bit = 16文字のBase32）
+    let randomStr = '';
+    let carry = 0;
+    for (let i = 0; i < 16; i++) {
+      const byteIndex = Math.floor((i * 5) / 8);
+      const bitIndex = (i * 5) % 8;
+
+      if (byteIndex < randomBytes.length) {
+        let value = randomBytes[byteIndex] >> bitIndex;
+        if (byteIndex + 1 < randomBytes.length && bitIndex > 3) {
+          value |= (randomBytes[byteIndex + 1] << (8 - bitIndex));
+        }
+        randomStr += ULID_ENCODING[(value + carry) & 31];
+        carry = Math.floor((value + carry) / 32);
+      } else {
+        randomStr += ULID_ENCODING[carry & 31];
+        carry = 0;
+      }
+    }
+
+    return timestampStr + randomStr;
+  };
+
   const generateUUID = () => {
     if (version === 'v4') {
       return crypto.randomUUID();
+    } else if (version === 'v7') {
+      // UUID v7 implementation (timestamp + random)
+      const timestamp = Date.now();
+      const timestampHex = timestamp.toString(16).padStart(12, '0');
+
+      // Generate random bits for the remaining parts
+      const randomBytes = new Uint8Array(10);
+      crypto.getRandomValues(randomBytes);
+
+      // Convert random bytes to hex
+      const randomHex = Array.from(randomBytes)
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+
+      // Format as UUID v7: xxxxxxxx-xxxx-7xxx-yxxx-xxxxxxxxxxxx
+      // First 48 bits: timestamp (12 hex chars)
+      // Next 4 bits: version (7)
+      // Next 12 bits: random
+      // Next 2 bits: variant (10)
+      // Next 14 bits: random
+      // Last 48 bits: random
+
+      const part1 = timestampHex.substring(0, 8);
+      const part2 = timestampHex.substring(8, 12);
+      const part3 = '7' + randomHex.substring(0, 3);
+      const part4 = (parseInt(randomHex.substring(3, 5), 16) | 0x80).toString(16).padStart(2, '0') + randomHex.substring(5, 7);
+      const part5 = randomHex.substring(7, 19);
+
+      return `${part1}-${part2}-${part3}-${part4}-${part5}`;
+    } else if (version === 'ulid') {
+      return generateULID();
     } else {
       // Simple UUID v1 implementation (timestamp-based)
       const timestamp = Date.now();
       const random = Math.random().toString(16).substring(2, 14);
-      return `${timestamp.toString(16).padStart(12, '0')}-4${random.substring(0, 3)}-${random.substring(3, 7)}-${random.substring(7, 11)}`;
+      return `${timestamp.toString(16).padStart(12, '0')}-1${random.substring(0, 3)}-${random.substring(3, 7)}-${random.substring(7, 11)}`;
     }
   };
 
@@ -64,7 +134,7 @@ export function UUIDGenerator({ onHistoryAdd }: ToolProps) {
                 type="radio"
                 value="v4"
                 checked={version === 'v4'}
-                onChange={(e) => setVersion(e.target.value as 'v4' | 'v1')}
+                onChange={(e) => setVersion(e.target.value as 'v4' | 'v1' | 'v7' | 'ulid')}
                 className="mr-2"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">
@@ -76,11 +146,35 @@ export function UUIDGenerator({ onHistoryAdd }: ToolProps) {
                 type="radio"
                 value="v1"
                 checked={version === 'v1'}
-                onChange={(e) => setVersion(e.target.value as 'v4' | 'v1')}
+                onChange={(e) => setVersion(e.target.value as 'v4' | 'v1' | 'v7' | 'ulid')}
                 className="mr-2"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">
                 {t('uuidGenerator.version.v1')}
+              </span>
+            </label>
+            <label className="flex items-center">
+              <input
+                type="radio"
+                value="v7"
+                checked={version === 'v7'}
+                onChange={(e) => setVersion(e.target.value as 'v4' | 'v1' | 'v7' | 'ulid')}
+                className="mr-2"
+              />
+              <span className="text-sm text-gray-700 dark:text-gray-300">
+                {t('uuidGenerator.version.v7')}
+              </span>
+            </label>
+            <label className="flex items-center">
+              <input
+                type="radio"
+                value="ulid"
+                checked={version === 'ulid'}
+                onChange={(e) => setVersion(e.target.value as 'v4' | 'v1' | 'v7' | 'ulid')}
+                className="mr-2"
+              />
+              <span className="text-sm text-gray-700 dark:text-gray-300">
+                {t('uuidGenerator.version.ulid')}
               </span>
             </label>
           </div>
@@ -156,6 +250,12 @@ export function UUIDGenerator({ onHistoryAdd }: ToolProps) {
             </p>
             <p>
               <strong>UUID v1:</strong> {t('uuidGenerator.description.v1')}
+            </p>
+            <p>
+              <strong>UUID v7:</strong> {t('uuidGenerator.description.v7')}
+            </p>
+            <p>
+              <strong>ULID:</strong> {t('uuidGenerator.description.ulid')}
             </p>
           </div>
         </div>

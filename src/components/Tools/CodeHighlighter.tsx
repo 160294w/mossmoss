@@ -333,7 +333,7 @@ const userService = new UserService('/api');`,
   };
 
   const supportedLanguages: { value: SupportedLanguage; label: string }[] = [
-    { value: 'auto', label: t('codeHighlighter.settings.autoDetect') },
+    { value: 'auto', label: t('codeHighlighter.language.auto') },
     { value: 'python', label: 'Python' },
     { value: 'ruby', label: 'Ruby' },
     { value: 'c', label: 'C/C++' },
@@ -351,12 +351,12 @@ const userService = new UserService('/api');`,
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {t('codeHighlighter.input.codeLabel')}
+            {t('codeHighlighter.input.label')}
           </label>
           <textarea
             value={inputCode}
             onChange={(e) => handleCodeChange(e.target.value)}
-            placeholder={t('codeHighlighter.input.codePlaceholder')}
+            placeholder={t('codeHighlighter.input.placeholder')}
             rows={10}
             className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-mono text-sm resize-y"
           />
@@ -365,7 +365,7 @@ const userService = new UserService('/api');`,
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t('codeHighlighter.settings.languageLabel')}
+              {t('codeHighlighter.language.label')}
             </label>
             <select
               value={manualLanguage}
@@ -382,31 +382,31 @@ const userService = new UserService('/api');`,
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t('codeHighlighter.settings.themeLabel')}
+              {t('codeHighlighter.theme.label')}
             </label>
             <select
               value={theme}
               onChange={(e) => setTheme(e.target.value as 'light' | 'dark')}
               className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
             >
-              <option value="dark">{t('codeHighlighter.settings.darkTheme')}</option>
-              <option value="light">{t('codeHighlighter.settings.lightTheme')}</option>
+              <option value="dark">{t('codeHighlighter.theme.dark')}</option>
+              <option value="light">{t('codeHighlighter.theme.light')}</option>
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t('codeHighlighter.settings.detectedLabel')}
+              {t('codeHighlighter.detectedLanguage.label')}
             </label>
             <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-md text-sm text-gray-700 dark:text-gray-300">
-              {detectedLanguage === 'auto' ? t('codeHighlighter.settings.noDetection') : detectedLanguage}
+              {detectedLanguage === 'auto' ? t('codeHighlighter.detectedLanguage.none') : detectedLanguage}
             </div>
           </div>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {t('codeHighlighter.sample.insertLabel')}
+            {t('codeHighlighter.samples.label')}
           </label>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
             <Button onClick={() => insertSample('python')} variant="outline" size="sm">
@@ -447,10 +447,10 @@ const userService = new UserService('/api');`,
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {t('codeHighlighter.result.highlightedCode').replace('{language}', getDisplayLanguage())}
+              {t('codeHighlighter.result.title').replace('{language}', getDisplayLanguage())}
             </h3>
             <Button onClick={handleCopy} variant="outline" size="sm">
-              {isCopied ? t('codeHighlighter.button.copied') : t('codeHighlighter.button.copy')}
+              {isCopied ? t('codeHighlighter.copied') : t('codeHighlighter.copy')}
             </Button>
           </div>
 
@@ -470,9 +470,9 @@ const userService = new UserService('/api');`,
           </div>
 
           <div className="text-sm text-gray-600 dark:text-gray-400">
-            <p><strong>{t('codeHighlighter.features.supportedLanguagesTitle')}</strong> {t('codeHighlighter.features.supportedLanguages')}</p>
-            <p><strong>{t('codeHighlighter.features.autoDetectionTitle')}</strong> {t('codeHighlighter.features.autoDetection')}</p>
-            <p><strong>{t('codeHighlighter.features.manualSelectionTitle')}</strong> {t('codeHighlighter.features.manualSelection')}</p>
+            <p>{t('codeHighlighter.supportedLanguages')}</p>
+            <p>{t('codeHighlighter.autoDetection')}</p>
+            <p>{t('codeHighlighter.manualSelection')}</p>
           </div>
         </div>
       )}

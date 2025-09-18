@@ -36,13 +36,34 @@ export function CurlConverter({ onHistoryAdd }: ToolProps) {
     const lines = curl.trim().split(/\\\s*\n|\n/).map(line => line.trim());
     const fullCommand = lines.join(' ');
 
-    // URLの抽出
-    const urlMatch = fullCommand.match(/curl\s+(?:-[^\s]*\s+)*['"]?([^'"\\s]+)['"]?/) ||
-                    fullCommand.match(/['"]([^'"]*?:\/\/[^'"]+)['"]/) ||
-                    fullCommand.match(/(https?:\/\/[^\s]+)/);
-    
-    if (urlMatch) {
-      request.url = urlMatch[1].replace(/['"]/g, '');
+    // URLの抽出（より精密なパターンマッチング）
+    let url = '';
+
+    // 1. クォートで囲まれたURL
+    const quotedUrlMatch = fullCommand.match(/['"]([^'"]*?:\/\/[^'"]+)['"]/);
+    if (quotedUrlMatch) {
+      url = quotedUrlMatch[1];
+    } else {
+      // 2. 一般的なcurlパターン
+      const curlUrlMatch = fullCommand.match(/curl\s+(?:-[^\s]*\s+)*['"]?([^'"\\s]+)['"]?/);
+      if (curlUrlMatch) {
+        url = curlUrlMatch[1];
+      } else {
+        // 3. http(s)で始まるパターン
+        const httpUrlMatch = fullCommand.match(/(https?:\/\/[^\s'"]+)/);
+        if (httpUrlMatch) {
+          url = httpUrlMatch[1];
+        }
+      }
+    }
+
+    // URLのクリーンアップと検証
+    if (url) {
+      url = url.replace(/['"]/g, '').trim();
+      // 基本的なURL形式チェック
+      if (url.match(/^https?:\/\//) || url.includes('://')) {
+        request.url = url;
+      }
     }
 
     // メソッドの抽出
@@ -61,12 +82,50 @@ export function CurlConverter({ onHistoryAdd }: ToolProps) {
       }
     }
 
-    // ボディデータの抽出
-    const dataMatch = fullCommand.match(/-d\s+['"]([^'"]*?)['"]|--data\s+['"]([^'"]*?)['"]|--data-raw\s+['"]([^'"]*?)['"]/) ||
-                     fullCommand.match(/-d\s+([^-\s][^\s]*)|--data\s+([^-\s][^\s]*)/);
-    
-    if (dataMatch) {
-      request.body = dataMatch[1] || dataMatch[2] || dataMatch[3] || dataMatch[4] || dataMatch[5];
+    // ボディデータの抽出（改良版）
+    let bodyData = '';
+
+    // 1. シングルクォートで囲まれたデータ (-d 'data')
+    const singleQuoteMatch = fullCommand.match(/-d\s+'([^']*(?:\\'[^']*)*)'/);
+    if (singleQuoteMatch) {
+      bodyData = singleQuoteMatch[1];
+    }
+
+    // 2. ダブルクォートで囲まれたデータ (-d "data")
+    if (!bodyData) {
+      const doubleQuoteMatch = fullCommand.match(/-d\s+"([^"]*(?:\\"[^"]*)*)"/);
+      if (doubleQuoteMatch) {
+        bodyData = doubleQuoteMatch[1];
+      }
+    }
+
+    // 3. --data パターンも同様に処理
+    if (!bodyData) {
+      const dataMatch = fullCommand.match(/--data\s+'([^']*(?:\\'[^']*)*)'|--data\s+"([^"]*(?:\\"[^']*)*)"/);
+      if (dataMatch) {
+        bodyData = dataMatch[1] || dataMatch[2] || '';
+      }
+    }
+
+    // 4. --data-raw パターン
+    if (!bodyData) {
+      const dataRawMatch = fullCommand.match(/--data-raw\s+'([^']*(?:\\'[^']*)*)'|--data-raw\s+"([^"]*(?:\\"[^']*)*)"/);
+      if (dataRawMatch) {
+        bodyData = dataRawMatch[1] || dataRawMatch[2] || '';
+      }
+    }
+
+    // 5. クォートなしのデータパターン（最後の手段）
+    if (!bodyData) {
+      const unquotedDataMatch = fullCommand.match(/-d\s+([^-\s]\S+)|--data\s+([^-\s]\S+)|--data-raw\s+([^-\s]\S+)/);
+      if (unquotedDataMatch) {
+        bodyData = unquotedDataMatch[1] || unquotedDataMatch[2] || unquotedDataMatch[3] || '';
+      }
+    }
+
+    if (bodyData) {
+      // エスケープされた文字を復元
+      request.body = bodyData.replace(/\\'/g, "'").replace(/\\"/g, '"').replace(/\\\\/g, '\\');
       if (request.method === 'GET') {
         request.method = 'POST';
       }
@@ -111,25 +170,36 @@ export function CurlConverter({ onHistoryAdd }: ToolProps) {
   // HTTPリクエストの整形表示
   const formatHttpRequest = (request: HttpRequest): string => {
     const lines: string[] = [];
-    
-    // リクエストライン
-    lines.push(`${request.method} ${new URL(request.url).pathname}${new URL(request.url).search} HTTP/1.1`);
-    lines.push(`Host: ${new URL(request.url).host}`);
-    
-    // ヘッダー
-    Object.entries(request.headers).forEach(([key, value]) => {
-      lines.push(`${key}: ${value}`);
-    });
-    
-    // 空行
-    lines.push('');
-    
-    // ボディ
-    if (request.body) {
-      lines.push(request.body);
+
+    try {
+      // URLの有効性をチェック
+      if (!request.url || !request.url.trim()) {
+        throw new Error('URL is required');
+      }
+
+      const url = new URL(request.url);
+
+      // リクエストライン
+      lines.push(`${request.method} ${url.pathname}${url.search} HTTP/1.1`);
+      lines.push(`Host: ${url.host}`);
+
+      // ヘッダー
+      Object.entries(request.headers).forEach(([key, value]) => {
+        lines.push(`${key}: ${value}`);
+      });
+
+      // 空行
+      lines.push('');
+
+      // ボディ
+      if (request.body) {
+        lines.push(request.body);
+      }
+
+      return lines.join('\n');
+    } catch (error) {
+      throw new Error('Invalid URL format');
     }
-    
-    return lines.join('\n');
   };
 
   useEffect(() => {
@@ -142,6 +212,14 @@ export function CurlConverter({ onHistoryAdd }: ToolProps) {
         }
 
         const request = parseCurlCommand(curlInput);
+
+        // URLが抽出できていない場合のエラーハンドリング
+        if (!request.url) {
+          setError('有効なURLが見つかりません。curlコマンドにURLが含まれていることを確認してください。');
+          setOutput('');
+          return;
+        }
+
         const formattedHttp = formatHttpRequest(request);
         setOutput(formattedHttp);
         setError('');
@@ -160,18 +238,28 @@ export function CurlConverter({ onHistoryAdd }: ToolProps) {
           return;
         }
 
+        // HTTPモードでのURL検証
+        try {
+          new URL(httpUrl);
+        } catch {
+          setError('無効なURL形式です。https://example.com のような完全なURLを入力してください。');
+          setOutput('');
+          return;
+        }
+
         const curlCommand = generateCurlCommand(httpMethod, httpUrl, httpHeaders, httpBody);
         setOutput(curlCommand);
         setError('');
 
         onHistoryAdd?.({
-          toolId: 'curl-converter', 
+          toolId: 'curl-converter',
           input: `${httpMethod} ${httpUrl}`,
           output: t('curlConverter.historyOutput.httpToCurl')
         });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('curlConverter.error.conversion'));
+      const errorMessage = err instanceof Error ? err.message : t('curlConverter.error.conversion');
+      setError(errorMessage);
       setOutput('');
     }
   }, [mode, curlInput, httpMethod, httpUrl, httpHeaders, httpBody]);
