@@ -366,7 +366,7 @@ export function JsonLogViewer({ onHistoryAdd }: ToolProps) {
           value={rawLogs}
           onChange={(e) => setRawLogs(e.target.value)}
           placeholder={t('jsonLogViewer.input.placeholder')}
-          rows={6}
+          rows={12}
           className={`w-full px-3 py-2 border rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono text-sm resize-y ${
             error ? 'border-red-300 dark:border-red-500' : 'border-gray-300 dark:border-gray-600'
           }`}
