@@ -26,7 +26,8 @@ import {
   AlertTriangle,
   ScrollText,
   ArrowRightLeft,
-  Code
+  Code,
+  GitCompareArrows
 } from 'lucide-react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
@@ -61,6 +62,7 @@ import { HtmlEscaper } from './components/Tools/HtmlEscaper';
 import { JsonLogViewer } from './components/Tools/JsonLogViewer';
 import { CaseConverter } from './components/Tools/CaseConverter';
 import { CurlToCode } from './components/Tools/CurlToCode';
+import { DiffViewer } from './components/Tools/DiffViewer';
 import { useGSAP } from './hooks/useGSAP';
 
 // カテゴリ定義
@@ -202,6 +204,15 @@ const toolsConfig = [
     icon: ScrollText,
     iconColor: 'text-fuchsia-500',
     component: JsonLogViewer,
+    category: 'development'
+  },
+  {
+    id: 'diff-viewer',
+    nameKey: 'tool.diffViewer.name',
+    descriptionKey: 'tool.diffViewer.description',
+    icon: GitCompareArrows,
+    iconColor: 'text-cyan-600',
+    component: DiffViewer,
     category: 'development'
   },
   {

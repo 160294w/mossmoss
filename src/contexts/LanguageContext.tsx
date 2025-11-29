@@ -95,6 +95,8 @@ const translations: Translations = {
     'tool.htmlEscaper.description': 'HTMLエスケープ・アンエスケープ処理',
     'tool.jsonLogViewer.name': 'JSONログビューア',
     'tool.jsonLogViewer.description': 'JSONログの整形・フィルタ・検索機能',
+    'tool.diffViewer.name': 'Diffビューア',
+    'tool.diffViewer.description': 'テキストの差分をサイドバイサイドで表示',
     // JsonLogViewer translations
     'jsonLogViewer.settings.title': '表示設定',
     'jsonLogViewer.settings.timestamp': 'タイムスタンプ',
@@ -969,6 +971,8 @@ const translations: Translations = {
     'tool.htmlEscaper.description': 'HTML escape and unescape processing',
     'tool.jsonLogViewer.name': 'JSON Log Viewer',
     'tool.jsonLogViewer.description': 'Format, filter, and search JSON logs',
+    'tool.diffViewer.name': 'Diff Viewer',
+    'tool.diffViewer.description': 'Side-by-side text comparison',
     // JsonLogViewer translations
     'jsonLogViewer.settings.title': 'Display Settings',
     'jsonLogViewer.settings.timestamp': 'Timestamp',
