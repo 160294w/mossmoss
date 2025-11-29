@@ -79,6 +79,14 @@
 - 各形式の使用例とサンプル
 - 入出力の即座入れ替え機能
 
+### 🔀 Diffビューア
+- サイドバイサイドのテキスト差分表示
+- 行単位の差分をカラーハイライト（追加・削除・変更）
+- 空白無視・大文字小文字無視オプション
+- 左右テキスト入れ替え機能
+- 詳細統計情報（追加/削除行数、総行数）
+- WinMerge/Meldライクなユーザー体験
+
 ## 🏗️ 技術スタック
 
 ### フロントエンド
@@ -98,6 +106,7 @@
 
 ### 外部ライブラリ
 - **qrcode** - QRコード生成
+- **diff** - テキスト差分計算
 - **clsx** - 条件付きクラス名
 - **tailwind-merge** - Tailwindクラス最適化
 
@@ -115,7 +124,8 @@ src/
 │   │   ├── JSONFormatter.tsx
 │   │   ├── QRGenerator.tsx
 │   │   ├── JWTViewer.tsx
-│   │   └── BaseConverter.tsx
+│   │   ├── BaseConverter.tsx
+│   │   └── DiffViewer.tsx
 │   ├── UI/              # 共通UIコンポーネント
 │   │   ├── Button.tsx
 │   │   └── Card.tsx
@@ -126,6 +136,7 @@ src/
 ├── hooks/               # カスタムフック
 │   ├── useLocalStorage.ts
 │   ├── useCopyToClipboard.ts
+│   ├── useDiff.ts
 │   └── useGSAP.ts
 ├── types/               # TypeScript型定義
 │   └── index.ts
