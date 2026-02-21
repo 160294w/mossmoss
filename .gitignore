@@ -1,0 +1,6 @@
+# Emacs auto-save files
+\#*\#
+.#*
+
+# macOS
+.DS_Store
